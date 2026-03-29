@@ -1,5 +1,6 @@
 import express from 'express';
-import { getMe, socialLogin, testAuth } from '../controllers/auth.js';
+import { addUserRole, myProfile, socialLogin, testAuth } from '../controllers/auth.js';
+import { isAuth } from '../middleware/isAuth.js';
 
 const router = express.Router();
 
@@ -11,9 +12,15 @@ router.get('/test', testAuth);
 
 /**
  * Route: /api/v1/auth/me
- * Description: Get current user profile (requires user ID for now)
+ * Description: Get current user profile
  */
-router.get('/me', getMe);
+router.get('/my-profile', isAuth, myProfile);
+
+/**
+ * Route: /api/v1/auth/role
+ * Description: Assign role to user
+ */
+router.put('/role', isAuth, addUserRole);
 
 /**
  * Route: /api/v1/auth/social-login

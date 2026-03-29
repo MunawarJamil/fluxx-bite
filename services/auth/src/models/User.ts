@@ -3,8 +3,11 @@ import mongoose, { Schema, Document, model } from 'mongoose';
 export interface IUser extends Document {
   name: string;
   email: string;
-  image?: string;
-  role: 'user' | 'admin' | 'partner';
+  image?: string | null | undefined;
+  role: 'customer' | 'rider' | 'seller' | null | undefined;
+  googleAccessToken?: string | null | undefined;
+  googleRefreshToken?: string | null | undefined;
+  googleTokenExpiry?: number | null | undefined;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -29,7 +32,19 @@ const UserSchema: Schema = new Schema(
     },
     role: {
       type: String,
-      enum: ['user', 'admin', 'partner'],
+      enum: ['customer', 'rider', 'seller'],
+      default: null,
+    },
+    googleAccessToken: {
+      type: String,
+      default: null,
+    },
+    googleRefreshToken: {
+      type: String,
+      default: null,
+    },
+    googleTokenExpiry: {
+      type: Number,
       default: null,
     },
   },
