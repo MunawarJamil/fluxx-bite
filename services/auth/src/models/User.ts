@@ -1,13 +1,14 @@
-import mongoose, { Schema, Document, model } from 'mongoose';
+import mongoose, { Schema, Document } from 'mongoose';
 
 export interface IUser extends Document {
   name: string;
   email: string;
-  image?: string | null | undefined;
-  role: 'customer' | 'rider' | 'seller' | null | undefined;
-  googleAccessToken?: string | null | undefined;
-  googleRefreshToken?: string | null | undefined;
-  googleTokenExpiry?: number | null | undefined;
+  password?: string;
+  image?: string | null;
+  role: 'customer' | 'rider' | 'seller';
+  provider: 'google' | 'local';
+  providerId?: string;
+  refreshToken?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -19,33 +20,46 @@ const UserSchema: Schema = new Schema(
       required: [true, 'Name is required'],
       trim: true,
     },
+
     email: {
       type: String,
       required: [true, 'Email is required'],
       unique: true,
-      trim: true,
       lowercase: true,
+      trim: true,
     },
+
+    password: {
+      type: String,
+      select: false, // 🔐 never return password
+    },
+
     image: {
       type: String,
       default: '',
     },
+
     role: {
       type: String,
       enum: ['customer', 'rider', 'seller'],
-      default: null,
+      default: 'customer',
     },
-    googleAccessToken: {
+
+    provider: {
       type: String,
-      default: null,
+      enum: ['google', 'local'],
+      default: 'google',
     },
-    googleRefreshToken: {
+
+    providerId: {
       type: String,
-      default: null,
+      unique: true,
+      sparse: true,
     },
-    googleTokenExpiry: {
-      type: Number,
-      default: null,
+
+    refreshToken: {
+      type: String,
+      select: false, // 🔐 hide from queries
     },
   },
   {
@@ -53,4 +67,7 @@ const UserSchema: Schema = new Schema(
   }
 );
 
-export default model<IUser>('User', UserSchema);
+// ✅ Indexes
+UserSchema.index({ email: 1 }, { unique: true });
+
+export default mongoose.model<IUser>('User', UserSchema);

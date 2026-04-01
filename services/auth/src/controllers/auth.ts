@@ -83,62 +83,101 @@ export const addUserRole = asyncHandler(async (req: AuthenticatedRequest, res: R
 export const socialLogin = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
   const { code } = req.body;
 
-  if (!code) {
-    return next(new ErrorResponse('Please provide a Google authorization code', 400));
+  if (!code || typeof code !== 'string') {
+    return next(new ErrorResponse('Invalid Google authorization code', 400));
   }
 
-  try {
-    // 1. Exchange the authorization code for tokens
-    const { tokens } = await oauth2client.getToken(code);
-    oauth2client.setCredentials(tokens);
+  // 1. Exchange code for tokens
+  const { tokens } = await oauth2client.getToken(code).catch((err) => {
+    console.error('Google Code Exchange Error:', err.message);
+    throw new ErrorResponse('Google authentication failed', 401);
+  });
 
-    // 2. Fetch the user's profile info from Google
-    const googleInfo = await google.oauth2('v2').userinfo.get({ auth: oauth2client });
-    const { email, name, picture } = googleInfo.data;
+  if (!tokens.id_token) {
+    return next(new ErrorResponse('Google ID token not received', 400));
+  }
 
-    if (!email) {
-      return next(new ErrorResponse('Failed to retrieve email from Google', 400));
-    }
+  // 2. Verify ID token (CRITICAL SECURITY STEP)
+  const ticket = await oauth2client.verifyIdToken({
+    idToken: tokens.id_token,
+    audience: process.env.GOOGLE_CLIENT_ID as string,
+  }).catch((err) => {
+    console.error('Google ID Token Verify Error:', err.message);
+    throw new ErrorResponse('Google authentication failed', 401);
+  });
 
-    // 3. Upsert the user in our database
-    let user = await User.findOne({ email });
+  const payload = ticket.getPayload();
 
-    if (!user) {
-      // Create new user if not found
-      user = await User.create({
-        email,
-        name: name || 'Google User',
-        image: picture || null,
-        googleAccessToken: tokens.access_token || null,
-        googleRefreshToken: tokens.refresh_token || null,
-        googleTokenExpiry: tokens.expiry_date || null,
-      });
-    } else {
-      // Update user details and tokens if they exist
-      if (name) user.name = name;
-      if (picture) user.image = picture;
-      if (tokens.access_token) user.googleAccessToken = tokens.access_token;
-      if (tokens.refresh_token) user.googleRefreshToken = tokens.refresh_token;
-      if (tokens.expiry_date) user.googleTokenExpiry = tokens.expiry_date;
-      await user.save();
-    }
+  if (!payload || !payload.email) {
+    return next(new ErrorResponse('Failed to retrieve user info from Google', 400));
+  }
 
-    // 4. Issue an internal JWT
-    const token = jwt.sign(
-      { id: user._id },
-      process.env.JWT_SECRET as string,
-      {
-        expiresIn: '15d',
-      }
-    );
+  if (!payload.email_verified) {
+    return next(new ErrorResponse('Google email is not verified', 400));
+  }
 
-    res.status(200).json({
-      success: true,
-      data: user,
-      token,
+  const { email, name, picture, sub } = payload;
+
+  // 3. Find or create user (with provider linking)
+  let user = await User.findOne({
+    $or: [{ email }, { providerId: sub }],
+  });
+
+  if (!user) {
+    user = await User.create({
+      email,
+      name: name || 'Google User',
+      image: picture || null,
+      provider: 'google',
+      providerId: sub,
     });
-  } catch (err: any) {
-    console.error('Google Auth Error:', err.response?.data || err.message);
-    return next(new ErrorResponse('Google authentication failed', 401));
+  } else {
+    // Update existing user
+    user.name = name || user.name;
+    user.image = picture || " ";
+    user.provider = 'google';
+    user.providerId = sub;
+
+    await user.save();
   }
+
+  // 4. Generate tokens (Access + Refresh)
+  const accessToken = jwt.sign(
+    { id: user._id },
+    process.env.JWT_SECRET as string,
+    { expiresIn: '15m' }
+  );
+
+  const refreshToken = jwt.sign(
+    { id: user._id },
+    process.env.JWT_REFRESH_SECRET as string,
+    { expiresIn: '7d' }
+  );
+
+  // 5. Set secure cookies
+  res.cookie('accessToken', accessToken, {
+    httpOnly: true,
+    secure: true,
+    sameSite: 'strict',
+  });
+
+  res.cookie('refreshToken', refreshToken, {
+    httpOnly: true,
+    secure: true,
+    sameSite: 'strict',
+  });
+
+  // 6. Send safe user data only
+  const safeUser = {
+    id: user._id,
+    email: user.email,
+    name: user.name,
+    image: user.image,
+    role: user.role,
+  };
+
+  res.status(200).json({
+    success: true,
+    data: safeUser,
+  });
 });
