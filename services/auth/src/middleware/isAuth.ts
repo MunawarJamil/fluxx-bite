@@ -1,49 +1,50 @@
 import { Request, Response, NextFunction } from 'express';
-import jwt from 'jsonwebtoken';
-import { JwtPayload } from 'jsonwebtoken';
+import jwt, { JwtPayload } from 'jsonwebtoken';
 import asyncHandler from '../utils/asyncHandler.js';
 import ErrorResponse from '../utils/ErrorResponse.js';
 import User, { IUser } from '../models/User.js';
 
-/**
- * Interface to extend Express Request with user property
- */
 export interface AuthenticatedRequest extends Request {
   user?: IUser | null;
 }
-
-/**
- * Middleware to authenticate JWT tokens
- * Protects routes and attaches user object to request
- */
 
 export const isAuth = asyncHandler(
   async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
     let token: string | undefined;
 
-    if (
+    // ✅ 1. Try to get token from cookies (PRIMARY - production)
+    if (req.cookies?.accessToken) {
+      token = req.cookies.accessToken;
+    }
+
+    // ✅ 2. Fallback to Authorization header (for Postman/testing)
+    else if (
       req.headers.authorization &&
       req.headers.authorization.startsWith('Bearer ')
     ) {
       token = req.headers.authorization.split(' ')[1];
     }
 
+    // ❌ No token
     if (!token) {
-      return next(new ErrorResponse('Not authorized to access this route', 401));
+      return next(new ErrorResponse('Not authorized, no token', 401));
     }
 
     try {
+      // ✅ 3. Verify token
       const decoded = jwt.verify(
         token,
         process.env.JWT_SECRET as string
       ) as JwtPayload & { id: string };
 
-      const user = await User.findById(decoded.id);
+      // ✅ 4. Get user (safe)
+      const user = await User.findById(decoded.id).select('-refreshToken');
 
       if (!user) {
         return next(new ErrorResponse('User not found', 404));
       }
 
+      // ✅ 5. Attach user to request
       req.user = user;
 
       next();
