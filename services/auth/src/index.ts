@@ -1,19 +1,15 @@
 import express, { Request, Response } from 'express';
 import cors from 'cors';
-import dotenv from 'dotenv';
 import connect_db from './config/db.js';
-
 import dns from 'dns'
 import authRoutes from './routes/auth.js';
 import errorHandler from './middleware/error.js';
 
+import dotenv from 'dotenv';
 dotenv.config();
 if (process.env.DNS_SERVERS && process.env.NODE_ENV === 'development') {
     dns.setServers(process.env.DNS_SERVERS.split(','));
 }
-
-
-
 const app = express();
 const PORT = process.env.PORT || 5000;
 

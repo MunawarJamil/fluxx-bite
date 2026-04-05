@@ -32,11 +32,17 @@ export const isAuth = asyncHandler(
 
     try {
       // ✅ 3. Verify token
-      const decoded = jwt.verify(
-        token,
-        process.env.JWT_SECRET as string
-      ) as JwtPayload & { id: string };
+      const JWT_ACCESS_SECRET = process.env.JWT_ACCESS_SECRET;
 
+      if (!JWT_ACCESS_SECRET) {
+        throw new Error('JWT_ACCESS_SECRET is not defined');
+      }
+
+      const decoded = jwt.verify(token, JWT_ACCESS_SECRET) as JwtPayload & { id: string };
+
+      if (decoded.type !== 'access') {
+        return next(new ErrorResponse('Invalid token type', 401));
+      }
       // ✅ 4. Get user (safe)
       const user = await User.findById(decoded.id).select('-refreshToken');
 
@@ -49,8 +55,10 @@ export const isAuth = asyncHandler(
 
       next();
     } catch (err) {
-      console.error('Auth error:', err);
-      return next(new ErrorResponse('Invalid or expired token', 401));
+      console.error('Auth error:', (err as Error).message);
+      if (err instanceof jwt.TokenExpiredError) {
+        return next(new ErrorResponse('Token expired', 401));
+      }
     }
   }
 );

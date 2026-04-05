@@ -8,7 +8,7 @@ export interface IUser extends Document {
   role: 'customer' | 'rider' | 'seller';
   provider: 'google' | 'local';
   providerId?: string;
-  refreshToken?: string;
+  refreshToken?: string | null;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -24,7 +24,6 @@ const UserSchema: Schema = new Schema(
     email: {
       type: String,
       required: [true, 'Email is required'],
-      unique: true,
       lowercase: true,
       trim: true,
     },
@@ -69,5 +68,6 @@ const UserSchema: Schema = new Schema(
 
 // ✅ Indexes
 UserSchema.index({ email: 1 }, { unique: true });
+UserSchema.index({ providerId: 1 }, { unique: true, sparse: true });
 
 export default mongoose.model<IUser>('User', UserSchema);
