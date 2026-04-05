@@ -1,5 +1,5 @@
 import express from 'express';
-import { addUserRole, logout, myProfile, refreshToken, socialLogin, testAuth } from '../controllers/auth.js';
+import { addUserRole, login, logout, myProfile, refreshToken, register, socialLogin, testAuth } from '../controllers/auth.js';
 import { isAuth } from '../middleware/isAuth.js';
 
 const router = express.Router();
@@ -22,10 +22,8 @@ router.get('/my-profile', isAuth, myProfile);
  */
 router.put('/role', isAuth, addUserRole);
 
-/**
- * Route: /api/v1/auth/social-login
- * Description: Social login/register
- */
+router.post('/register', register);
+router.post('/login', login);
 router.post('/social-login', socialLogin);
 router.post('/refresh-token', refreshToken);
 router.post('/logout', isAuth, logout);

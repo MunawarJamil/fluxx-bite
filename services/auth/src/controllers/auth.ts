@@ -198,8 +198,139 @@ export const socialLogin = asyncHandler(
   }
 );
 
+/**
+ * @desc    Register user (Email/Password)
+ * @route   POST /api/v1/auth/register
+ * @access  Public
+ */
+export const register = asyncHandler(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const { name, email, password, role } = req.body;
 
+    if (!name || !email || !password) {
+      return next(new ErrorResponse('Please provide name, email and password', 400));
+    }
 
+    // 1. Check if user already exists
+    const userExists = await User.findOne({ email });
+    if (userExists) {
+      return next(new ErrorResponse('User already exists', 400));
+    }
+
+    // 2. Create user (password is hashed in pre-save hook)
+    const user = await User.create({
+      name,
+      email,
+      password,
+      role: role || 'customer',
+      provider: 'local',
+    });
+
+    // 3. Generate tokens
+    const { accessToken, refreshToken } = generateTokens(user._id.toString());
+
+    // 4. Hash refresh token before saving (SECURITY)
+    const hashedRefreshToken = crypto
+      .createHash('sha256')
+      .update(refreshToken)
+      .digest('hex');
+
+    user.refreshToken = hashedRefreshToken;
+    await user.save();
+
+    // 5. Set cookies
+    const isProd = process.env.NODE_ENV === 'production';
+    res.cookie('accessToken', accessToken, {
+      httpOnly: true,
+      secure: isProd,
+      sameSite: 'lax',
+      maxAge: 15 * 60 * 1000, 
+    });
+
+    res.cookie('refreshToken', refreshToken, {
+      httpOnly: true,
+      secure: isProd,
+      sameSite: 'lax',
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
+
+    return res.status(201).json({
+      success: true,
+      data: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+      },
+    });
+  }
+);
+
+/**
+ * @desc    Login user (Email/Password)
+ * @route   POST /api/v1/auth/login
+ * @access  Public
+ */
+export const login = asyncHandler(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+      return next(new ErrorResponse('Please provide email and password', 400));
+    }
+
+    // 1. Check for user (include password)
+    const user = await User.findOne({ email }).select('+password');
+    if (!user) {
+      return next(new ErrorResponse('Invalid credentials', 401));
+    }
+
+    // 2. Check if password matches
+    const isMatch = await user.matchPassword(password);
+    if (!isMatch) {
+      return next(new ErrorResponse('Invalid credentials', 401));
+    }
+
+    // 3. Generate tokens
+    const { accessToken, refreshToken } = generateTokens(user._id.toString());
+
+    // 4. Hash refresh token (SECURITY)
+    const hashedRefreshToken = crypto
+      .createHash('sha256')
+      .update(refreshToken)
+      .digest('hex');
+
+    user.refreshToken = hashedRefreshToken;
+    await user.save();
+
+    // 5. Set cookies
+    const isProd = process.env.NODE_ENV === 'production';
+    res.cookie('accessToken', accessToken, {
+      httpOnly: true,
+      secure: isProd,
+      sameSite: 'lax',
+      maxAge: 15 * 60 * 1000,
+    });
+
+    res.cookie('refreshToken', refreshToken, {
+      httpOnly: true,
+      secure: isProd,
+      sameSite: 'lax',
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
+
+    return res.status(200).json({
+      success: true,
+      data: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        image: user.image,
+      },
+    });
+  }
+);
 
 // routes/auth.ts
 export const refreshToken = asyncHandler(async (req, res, next) => {
@@ -289,3 +420,4 @@ export const logout = asyncHandler(async (req, res) => {
 
   res.json({ success: true });
 });
+

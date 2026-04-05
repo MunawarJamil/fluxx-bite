@@ -1,4 +1,8 @@
 import mongoose, { Schema, Document } from 'mongoose';
+import crypto from 'crypto';
+import { promisify } from 'util';
+
+const scrypt = promisify(crypto.scrypt);
 
 export interface IUser extends Document {
   name: string;
@@ -11,6 +15,7 @@ export interface IUser extends Document {
   refreshToken?: string | null;
   createdAt: Date;
   updatedAt: Date;
+  matchPassword(enteredPassword: string): Promise<boolean>;
 }
 
 const UserSchema: Schema = new Schema(
@@ -65,6 +70,30 @@ const UserSchema: Schema = new Schema(
     timestamps: true,
   }
 );
+
+// 🔐 Encrypt password before saving
+UserSchema.pre<IUser>('save', async function () {
+  if (!this.isModified('password') || !this.password) {
+    return;
+  }
+
+  const salt = crypto.randomBytes(16).toString('hex');
+  const derivedKey = (await scrypt(this.password, salt, 64)) as Buffer;
+  this.password = `${salt}:${derivedKey.toString('hex')}`;
+});
+
+// ✅ Match user entered password to hashed password in database
+UserSchema.methods.matchPassword = async function (enteredPassword: string): Promise<boolean> {
+  if (!this.password) return false;
+
+  const [salt, key] = this.password.split(':');
+  const keyBuffer = Buffer.from(key, 'hex');
+  const derivedKey = (await scrypt(enteredPassword, salt, 64)) as Buffer;
+
+  // 🛡 Use timingSafeEqual to prevent timing attacks
+  if (keyBuffer.length !== derivedKey.length) return false;
+  return crypto.timingSafeEqual(keyBuffer, derivedKey);
+};
 
 // ✅ Indexes
 UserSchema.index({ email: 1 }, { unique: true });
