@@ -28,6 +28,7 @@ const UserSchema: Schema = new Schema(
 
     email: {
       type: String,
+      unique: true,
       required: [true, 'Email is required'],
       lowercase: true,
       trim: true,
@@ -57,8 +58,8 @@ const UserSchema: Schema = new Schema(
 
     providerId: {
       type: String,
-      unique: true,
       sparse: true,
+      unique: true,
     },
 
     refreshToken: {
@@ -95,8 +96,5 @@ UserSchema.methods.matchPassword = async function (enteredPassword: string): Pro
   return crypto.timingSafeEqual(keyBuffer, derivedKey);
 };
 
-// ✅ Indexes
-UserSchema.index({ email: 1 }, { unique: true });
-UserSchema.index({ providerId: 1 }, { unique: true, sparse: true });
 
 export default mongoose.model<IUser>('User', UserSchema);
