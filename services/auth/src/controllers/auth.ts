@@ -9,6 +9,9 @@ import { generateTokens } from '../utils/generateTokens.js';
 import crypto from 'crypto';
 
 
+const isProd = process.env.NODE_ENV === 'production';
+
+
 /**
  * @desc    Test auth endpoint (First Route)
  * @route   GET /api/v1/auth/test
@@ -72,7 +75,6 @@ export const addUserRole = asyncHandler(async (req: AuthenticatedRequest, res: R
   res.status(200).json({
     success: true,
     data: user,
-    token,
   });
 });
 
@@ -166,19 +168,18 @@ export const socialLogin = asyncHandler(
     await user.save();
 
     // 7. Set cookies
-    const isProd = process.env.NODE_ENV === 'production';
 
     res.cookie('accessToken', accessToken, {
       httpOnly: true,
       secure: isProd,
-      sameSite: 'strict',
+      sameSite: 'lax',
       maxAge: 15 * 60 * 1000, // 15 min
     });
 
     res.cookie('refreshToken', refreshToken, {
       httpOnly: true,
       secure: isProd,
-      sameSite: 'strict',
+      sameSite: 'lax',
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     });
 
@@ -239,12 +240,11 @@ export const register = asyncHandler(
     await user.save();
 
     // 5. Set cookies
-    const isProd = process.env.NODE_ENV === 'production';
     res.cookie('accessToken', accessToken, {
       httpOnly: true,
       secure: isProd,
       sameSite: 'lax',
-      maxAge: 15 * 60 * 1000, 
+      maxAge: 15 * 60 * 1000,
     });
 
     res.cookie('refreshToken', refreshToken, {
@@ -304,7 +304,6 @@ export const login = asyncHandler(
     await user.save();
 
     // 5. Set cookies
-    const isProd = process.env.NODE_ENV === 'production';
     res.cookie('accessToken', accessToken, {
       httpOnly: true,
       secure: isProd,
@@ -340,43 +339,63 @@ export const refreshToken = asyncHandler(async (req, res, next) => {
     return next(new ErrorResponse('No refresh token', 401));
   }
 
+  // ✅ hash incoming token
+  const hashedToken = crypto
+    .createHash('sha256')
+    .update(token)
+    .digest('hex');
+
+
   try {
     const decoded = jwt.verify(
       token,
       process.env.JWT_REFRESH_SECRET!
     ) as { id: string; type: string };
 
+
+
+
     // ✅ Ensure it's refresh token
     if (decoded.type !== 'refresh') {
       return next(new ErrorResponse('Invalid token type', 401));
     }
 
-    const user = await User.findById(decoded.id).select('+refreshToken');
+    // const user = await User.findById(decoded.id).select('+refreshToken');
+    const user = await User.findOne({ refreshToken: hashedToken })
 
     // ❌ Token mismatch (rotation protection)
-    if (!user || user.refreshToken !== token) {
+    if (!user || user.refreshToken !== hashedToken) {
       return next(new ErrorResponse('Refresh token reused or invalid', 401));
     }
 
     // 🔥 ROTATION STARTS HERE
 
-    // 1. Generate NEW tokens
+    //  Generate NEW tokens
     const { accessToken, refreshToken: newRefreshToken } = generateTokens(user._id.toString());
 
-    // 2. Replace old refresh token in DB
-    user.refreshToken = newRefreshToken;
+
+    const hashedNewToken = crypto
+      .createHash('sha256')
+      .update(newRefreshToken)
+      .digest('hex');
+
+
+    //  Replace old refresh token in DB
+    user.refreshToken = hashedNewToken;
     await user.save();
 
-    // 3. Send new cookies
+    //  Send new cookies
     res.cookie('accessToken', accessToken, {
       httpOnly: true,
-      secure: false,
+      secure: isProd,
+      maxAge: 15 * 60 * 1000,
       sameSite: 'lax',
     });
 
     res.cookie('refreshToken', newRefreshToken, {
       httpOnly: true,
-      secure: false,
+      secure: isProd,
+      maxAge: 7 * 24 * 60 * 60 * 1000,
       sameSite: 'lax',
     });
 

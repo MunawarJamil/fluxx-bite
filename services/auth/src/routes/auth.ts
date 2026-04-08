@@ -1,6 +1,7 @@
 import express from 'express';
 import { addUserRole, login, logout, myProfile, refreshToken, register, socialLogin, testAuth } from '../controllers/auth.js';
 import { isAuth } from '../middleware/isAuth.js';
+import { loginLimiter, refreshLimiter } from '../middleware/rateLimiter.js';
 
 const router = express.Router();
 
@@ -23,9 +24,9 @@ router.get('/my-profile', isAuth, myProfile);
 router.put('/role', isAuth, addUserRole);
 
 router.post('/register', register);
-router.post('/login', login);
+router.post('/login', loginLimiter, login);
 router.post('/social-login', socialLogin);
-router.post('/refresh-token', refreshToken);
+router.post('/refresh-token', refreshLimiter, refreshToken);
 router.post('/logout', isAuth, logout);
 
 export default router;
