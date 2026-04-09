@@ -15,7 +15,7 @@ router.get('/test', testAuth);
  * Route: /api/v1/auth/me
  * Description: Get current user profile
  */
-router.get('/my-profile', isAuth, myProfile);
+router.get('/me', isAuth, myProfile);
 
 /**
  * Route: /api/v1/auth/role

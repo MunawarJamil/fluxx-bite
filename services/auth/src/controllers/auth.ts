@@ -7,6 +7,7 @@ import jwt from 'jsonwebtoken';
 import { oauth2client } from '../config/googleConfig.js';
 import { generateTokens } from '../utils/generateTokens.js';
 import crypto from 'crypto';
+import { log } from 'console';
 
 
 const isProd = process.env.NODE_ENV === 'production';
@@ -113,8 +114,10 @@ export const socialLogin = asyncHandler(
         audience: process.env.GOOGLE_CLIENT_ID as string,
       });
       payload = ticket.getPayload();
+
     } catch (err: any) {
       console.error('Google ID Token Verify Error:', err.message);
+      console.log(payload);
       return next(new ErrorResponse('Google authentication failed', 401));
     }
 
@@ -170,14 +173,14 @@ export const socialLogin = asyncHandler(
     // 7. Set cookies
 
     res.cookie('accessToken', accessToken, {
-      httpOnly: true,
+      httpOnly: false,
       secure: isProd,
       sameSite: 'lax',
       maxAge: 15 * 60 * 1000, // 15 min
     });
 
     res.cookie('refreshToken', refreshToken, {
-      httpOnly: true,
+      httpOnly: false,
       secure: isProd,
       sameSite: 'lax',
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
@@ -241,14 +244,14 @@ export const register = asyncHandler(
 
     // 5. Set cookies
     res.cookie('accessToken', accessToken, {
-      httpOnly: true,
+      httpOnly: false,
       secure: isProd,
       sameSite: 'lax',
       maxAge: 15 * 60 * 1000,
     });
 
     res.cookie('refreshToken', refreshToken, {
-      httpOnly: true,
+      httpOnly: false,
       secure: isProd,
       sameSite: 'lax',
       maxAge: 7 * 24 * 60 * 60 * 1000,
@@ -305,14 +308,14 @@ export const login = asyncHandler(
 
     // 5. Set cookies
     res.cookie('accessToken', accessToken, {
-      httpOnly: true,
+      httpOnly: false,
       secure: isProd,
       sameSite: 'lax',
       maxAge: 15 * 60 * 1000,
     });
 
     res.cookie('refreshToken', refreshToken, {
-      httpOnly: true,
+      httpOnly: false,
       secure: isProd,
       sameSite: 'lax',
       maxAge: 7 * 24 * 60 * 60 * 1000,
@@ -386,14 +389,14 @@ export const refreshToken = asyncHandler(async (req, res, next) => {
 
     //  Send new cookies
     res.cookie('accessToken', accessToken, {
-      httpOnly: true,
+      httpOnly: false,
       secure: isProd,
       maxAge: 15 * 60 * 1000,
       sameSite: 'lax',
     });
 
     res.cookie('refreshToken', newRefreshToken, {
-      httpOnly: true,
+      httpOnly: false,
       secure: isProd,
       maxAge: 7 * 24 * 60 * 60 * 1000,
       sameSite: 'lax',
@@ -428,12 +431,13 @@ export const logout = asyncHandler(async (req, res) => {
   }
 
   res.clearCookie('accessToken', {
-    httpOnly: true,
+    httpOnly: false,
+    secure: isProd,
     sameSite: 'lax',
   });
 
   res.clearCookie('refreshToken', {
-    httpOnly: true,
+    httpOnly: false,
     sameSite: 'lax',
   });
 
