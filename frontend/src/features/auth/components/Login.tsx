@@ -1,18 +1,23 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useGoogleLogin } from '@react-oauth/google';
-import { toast } from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
-import api from '../../../api/axios';
 import { useForm } from 'react-hook-form';
 import type { LoginFormData, RegisterFormData } from '../types/auth.types';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { loginSchema, registerSchema } from '../schemas/auth.schema';
-
+import { useAuth } from '../hooks/useAuth';
 
 const Login = () => {
   const navigate = useNavigate();
+  const { isAuthenticated, isLoading, login, register: registerUser, socialLogin } = useAuth();
   const [isLogin, setIsLogin] = useState(true);
-  const [loading, setLoading] = useState(false);
+
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (isAuthenticated && !isLoading) {
+      navigate('/');
+    }
+  }, [isAuthenticated, isLoading, navigate]);
 
 
   // 🔥 Dynamic schema
@@ -26,48 +31,27 @@ const Login = () => {
 
   // 🔥 Submit handler
   const onSubmit = async (data: LoginFormData | RegisterFormData) => {
-    setLoading(true);
-
     try {
-      const endpoint = isLogin ? '/auth/login' : '/auth/register';
-
-      await api.post(endpoint, data);
-
-      // ✅ Fetch user from cookie session
-      const { data: userRes } = await api.get('/auth/me');
-
-      console.log('User:', userRes.data);
-
-      toast.success(isLogin ? 'Welcome back!' : 'Account created successfully!');
+      if (isLogin) {
+        await login(data as LoginFormData);
+      } else {
+        await registerUser(data as RegisterFormData);
+      }
       navigate('/');
-
-    } catch (error: any) {
-      console.error('Auth Error:', error);
-      toast.error(error.response?.data?.message || 'Authentication failed.');
-    } finally {
-      setLoading(false);
+    } catch (error) {
+      // Errors are handled by the context/toast
     }
   };
 
   // 🔥 Google login 
   const handleGoogleLogin = useGoogleLogin({
     onSuccess: async (tokenResponse) => {
-      setLoading(true);
       try {
         const { code } = tokenResponse;
-
-        await api.post('/auth/social-login', { code });
-
-        const { data } = await api.get('/auth/me');
-
-        console.log('User:', data.data);
-
-        toast.success('Authenticated successfully!');
+        await socialLogin(code);
         navigate('/');
-      } catch (error: any) {
-        toast.error(error.response?.data?.message || 'Google authentication failed.');
-      } finally {
-        setLoading(false);
+      } catch (error) {
+        // Errors handled by context
       }
     },
     flow: 'auth-code',
@@ -173,23 +157,23 @@ const Login = () => {
 
             <button
               type="submit"
-              disabled={loading}
+              disabled={isLoading}
               className="w-full relative group overflow-hidden bg-white text-black py-4 px-6 rounded-2xl font-black tracking-tight transition-all duration-300 active:scale-[0.97] disabled:opacity-50 disabled:cursor-not-allowed shadow-[0_20px_40px_-10px_rgba(255,255,255,0.2)] hover:shadow-[0_20px_40px_-5px_rgba(255,255,255,0.3)] mt-4"
             >
               <div className="absolute inset-0 bg-linear-to-r from-blue-500/10 to-purple-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
               <span className="relative z-10 flex items-center justify-center gap-2">
-                {loading ? (
+                {isLoading ? (
                   <>
                     <span className="w-5 h-5 border-3 border-black/10 border-t-black rounded-full animate-spin" />
                     Validating...
                   </>
                 ) : (
-                  isLogin ? 'Sign In to Portal' : 'Create My Account'
-                )}
-                {!loading && (
-                  <svg viewBox="0 0 24 24" className="w-4 h-4 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" strokeWidth="3">
-                    <path d="M5 12h14m-7-7l7 7-7 7" />
-                  </svg>
+                  <>
+                    {isLogin ? 'Sign In to Portal' : 'Create My Account'}
+                    <svg viewBox="0 0 24 24" className="w-4 h-4 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" strokeWidth="3">
+                      <path d="M5 12h14m-7-7l7 7-7 7" />
+                    </svg>
+                  </>
                 )}
               </span>
             </button>
@@ -205,7 +189,7 @@ const Login = () => {
           {/* Social Auth Button */}
           <button
             onClick={() => handleGoogleLogin()}
-            disabled={loading}
+            disabled={isLoading}
             className="w-full group flex items-center justify-center gap-4 bg-white/5 hover:bg-white/10 text-white py-4 px-6 rounded-2xl font-bold transition-all duration-300 active:scale-[0.98] border border-white/10 hover:border-white/20 shadow-lg"
           >
             <div className="p-1.5 bg-white rounded-lg shadow-sm">

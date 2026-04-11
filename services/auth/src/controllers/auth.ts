@@ -363,28 +363,42 @@ export const refreshToken = asyncHandler(async (req, res, next) => {
       return next(new ErrorResponse('Invalid token type', 401));
     }
 
-    // const user = await User.findById(decoded.id).select('+refreshToken');
-    const user = await User.findOne({ refreshToken: hashedToken })
+    // 1. Try to find user with the current refresh token
+    let user = await User.findOne({ refreshToken: hashedToken }).select('+refreshToken +oldRefreshToken +rotationTimestamp');
 
-    // ❌ Token mismatch (rotation protection)
-    if (!user || user.refreshToken !== hashedToken) {
+    // 2. If not found, check if it's a recently rotated "old" token (grace period for race conditions)
+    if (!user) {
+      user = await User.findOne({ oldRefreshToken: hashedToken }).select('+refreshToken +oldRefreshToken +rotationTimestamp');
+
+      if (user && user.rotationTimestamp) {
+        const timeSinceRotation = Date.now() - user.rotationTimestamp.getTime();
+        
+        // If used within 10 seconds of a rotation, allow it as a parallel request
+        if (timeSinceRotation < 10000) {
+          return res.status(200).json({ 
+            success: true, 
+            message: 'Concurrent refresh handled' 
+          });
+        }
+      }
+
+      // If no user found with current or valid old token, it's truly invalid/reused
       return next(new ErrorResponse('Refresh token reused or invalid', 401));
     }
 
     // 🔥 ROTATION STARTS HERE
-
     //  Generate NEW tokens
     const { accessToken, refreshToken: newRefreshToken } = generateTokens(user._id.toString());
-
 
     const hashedNewToken = crypto
       .createHash('sha256')
       .update(newRefreshToken)
       .digest('hex');
 
-
-    //  Replace old refresh token in DB
-    user.refreshToken = hashedNewToken;
+    //  Update tokens in DB with rotation state
+    user.oldRefreshToken = (user.refreshToken as string | null) || null; // current becomes old
+    user.refreshToken = hashedNewToken;       // new becomes current
+    user.rotationTimestamp = new Date();
     await user.save();
 
     //  Send new cookies

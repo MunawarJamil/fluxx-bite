@@ -13,6 +13,8 @@ export interface IUser extends Document {
   provider: 'google' | 'local';
   providerId?: string;
   refreshToken?: string | null;
+  oldRefreshToken?: string | null;
+  rotationTimestamp?: Date | null;
   createdAt: Date;
   updatedAt: Date;
   matchPassword(enteredPassword: string): Promise<boolean>;
@@ -65,6 +67,13 @@ const UserSchema: Schema = new Schema(
     refreshToken: {
       type: String,
       select: false, // 🔐 hide from queries
+    },
+    oldRefreshToken: {
+      type: String,
+      select: false,
+    },
+    rotationTimestamp: {
+      type: Date,
     },
   },
   {
