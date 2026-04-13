@@ -7,7 +7,9 @@ import errorHandler from './middleware/error.js';
 import cookieParser from 'cookie-parser';
 
 import dotenv from 'dotenv';
-dotenv.config();
+if (process.env.NODE_ENV !== "production") {
+    dotenv.config();
+}
 if (process.env.DNS_SERVERS && process.env.NODE_ENV === 'development') {
     dns.setServers(process.env.DNS_SERVERS.split(','));
 }
