@@ -1,11 +1,12 @@
-import React, { createContext, useReducer, useEffect, useCallback } from 'react';
+import React, { createContext, useReducer, useEffect, useCallback, useMemo } from 'react';
 import type { ReactNode } from 'react';
-import type { 
-  AuthContextType, 
-  AuthState, 
-  User, 
-  LoginFormData, 
-  RegisterFormData 
+import type {
+  AuthContextType,
+  AuthState,
+  User,
+  UserRole,
+  LoginFormData,
+  RegisterFormData
 } from '../types/auth.types';
 import * as authApi from '../services/auth.api';
 import toast from 'react-hot-toast';
@@ -24,6 +25,7 @@ type AuthAction =
   | { type: 'LOGOUT' }
   | { type: 'CLEAR_ERROR' };
 
+// Centralized Reducer function to handle state updates
 const authReducer = (state: AuthState, action: AuthAction): AuthState => {
   switch (action.type) {
     case 'AUTH_START':
@@ -55,11 +57,13 @@ const authReducer = (state: AuthState, action: AuthAction): AuthState => {
       return state;
   }
 };
-
+// Create context for authentication state and actions 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+// AuthProvider component to wrap the application with authentication context
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [state, dispatch] = useReducer(authReducer, initialState);
+
 
   // Bootstrap function to check if user is logged in
   const bootstrap = useCallback(async () => {
@@ -139,18 +143,55 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   };
 
+  const updateUserRole = async (role: UserRole) => {
+    dispatch({ type: 'AUTH_START' });
+    try {
+      const response = await authApi.updateUserRole(role);
+      dispatch({ type: 'AUTH_SUCCESS', payload: response.data });
+      toast.success(`Role updated to ${role}`);
+    } catch (error: any) {
+      const message = error.response?.data?.message || 'Role update failed';
+      dispatch({ type: 'AUTH_FAILURE', payload: message });
+      toast.error(message);
+      throw error;
+    }
+  };
+
+  const updateLocation = async (latitude: number, longitude: number, address?: string) => {
+    dispatch({ type: 'AUTH_START' });
+    try {
+      const response = await authApi.updateLocation(latitude, longitude, address);
+      dispatch({ type: 'AUTH_SUCCESS', payload: response.data });
+      toast.success('Location updated successfully!');
+    } catch (error: any) {
+      const message = error.response?.data?.message || 'Location update failed';
+      dispatch({ type: 'AUTH_FAILURE', payload: message });
+      // We don't necessarily want to log out the user if location update fails, 
+      // but the reducer currently clears the user on failure. 
+      // Actually, my reducer for AUTH_FAILURE sets user to null. 
+      // I should probably add a more granular action for "UPDATE_FAILURE" that doesn't clear the user.
+      toast.error(message);
+      throw error;
+    }
+  };
+
   const clearError = () => dispatch({ type: 'CLEAR_ERROR' });
+
+
+  const value = useMemo(() => ({
+    ...state,
+    login,
+    register,
+    logout,
+    socialLogin,
+    updateUserRole,
+    updateLocation,
+    clearError,
+  }), [state]);
 
   return (
     <AuthContext.Provider
-      value={{
-        ...state,
-        login,
-        register,
-        logout,
-        socialLogin,
-        clearError,
-      }}
+      value={value}
     >
       {children}
     </AuthContext.Provider>

@@ -56,9 +56,9 @@ export const addUserRole = asyncHandler(async (req: AuthenticatedRequest, res: R
 
   const user = await User.findByIdAndUpdate(
     req.user._id,
-    { role },
+    { role, roleSelected: true },
     {
-      new: true,
+      returnDocument: 'after',
       runValidators: true,
     }
   );
@@ -66,13 +66,7 @@ export const addUserRole = asyncHandler(async (req: AuthenticatedRequest, res: R
   if (!user) {
     return next(new ErrorResponse('User not found', 404));
   }
-  const token = jwt.sign(
-    { id: user._id },
-    process.env.JWT_SECRET as string,
-    {
-      expiresIn: '15d',
-    }
-  );
+
   res.status(200).json({
     success: true,
     data: user,
@@ -95,11 +89,13 @@ export const socialLogin = asyncHandler(
     // 1. Exchange code for tokens
     let tokens;
     try {
+      console.log('[SocialLogin] Exchanging code for tokens...');
       const response = await oauth2client.getToken(code);
       tokens = response.tokens;
+      console.log('[SocialLogin] Tokens received successfully.');
     } catch (err: any) {
-      console.error('Google Code Exchange Error:', err.message);
-      return next(new ErrorResponse('Google authentication failed', 401));
+      console.error('[SocialLogin] Google Code Exchange Error:', err.message);
+      return next(new ErrorResponse(`Google authentication failed: ${err.message}`, 401));
     }
 
     if (!tokens.id_token) {
@@ -109,16 +105,16 @@ export const socialLogin = asyncHandler(
     // 2. Verify ID token
     let payload;
     try {
+      console.log('[SocialLogin] Verifying ID token...');
       const ticket = await oauth2client.verifyIdToken({
         idToken: tokens.id_token,
         audience: process.env.GOOGLE_CLIENT_ID as string,
       });
       payload = ticket.getPayload();
-
+      console.log('[SocialLogin] ID Token verified for:', payload?.email);
     } catch (err: any) {
-      console.error('Google ID Token Verify Error:', err.message);
-      console.log(payload);
-      return next(new ErrorResponse('Google authentication failed', 401));
+      console.error('[SocialLogin] Google ID Token Verify Error:', err.message);
+      return next(new ErrorResponse(`Google ID token verification failed: ${err.message}`, 401));
     }
 
     if (!payload || !payload.email) {
@@ -193,6 +189,7 @@ export const socialLogin = asyncHandler(
       name: user.name,
       image: user.image,
       role: user.role,
+      roleSelected: user.roleSelected,
     };
 
     return res.status(200).json({
@@ -226,7 +223,6 @@ export const register = asyncHandler(
       name,
       email,
       password,
-      role: role || 'customer',
       provider: 'local',
     });
 
@@ -264,6 +260,7 @@ export const register = asyncHandler(
         name: user.name,
         email: user.email,
         role: user.role,
+        roleSelected: user.roleSelected,
       },
     });
   }
@@ -329,6 +326,7 @@ export const login = asyncHandler(
         email: user.email,
         role: user.role,
         image: user.image,
+        roleSelected: user.roleSelected,
       },
     });
   }
@@ -457,4 +455,48 @@ export const logout = asyncHandler(async (req, res) => {
 
   res.json({ success: true });
 });
+
+
+/**
+ * @desc    Update user location
+ * @route   PATCH /api/v1/auth/location
+ * @access  Private
+ */
+export const updateLocation = asyncHandler(
+  async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+    const { latitude, longitude, address } = req.body;
+
+    if (latitude === undefined || longitude === undefined) {
+      return next(new ErrorResponse('Please provide latitude and longitude', 400));
+    }
+
+    if (!req.user?._id) {
+       return next(new ErrorResponse('Not authorized', 401));
+    }
+
+    const user = await User.findByIdAndUpdate(
+      req.user._id,
+      {
+        location: {
+          type: 'Point',
+          coordinates: [longitude, latitude],
+        },
+        address: address || '',
+      },
+      {
+        new: true,
+        runValidators: true,
+      }
+    );
+
+    if (!user) {
+      return next(new ErrorResponse('User not found', 404));
+    }
+
+    res.status(200).json({
+      success: true,
+      data: user,
+    });
+  }
+);
 

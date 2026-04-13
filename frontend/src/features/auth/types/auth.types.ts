@@ -8,10 +8,16 @@ export interface User {
   id: string;
   name: string;
   email: string;
-  role: UserRole;
+  role: UserRole | null;
+  roleSelected: boolean;
   image?: string;
   provider: AuthProviderType;
   createdAt: string;
+  location?: {
+    type: 'Point';
+    coordinates: [number, number];
+  };
+  address?: string;
 }
 
 export interface AuthState {
@@ -29,5 +35,7 @@ export interface AuthContextType extends AuthState {
   register: (data: RegisterFormData) => Promise<void>;
   logout: () => Promise<void>;
   socialLogin: (response: any) => Promise<void>;
+  updateUserRole: (role: UserRole) => Promise<void>;
+  updateLocation: (latitude: number, longitude: number, address?: string) => Promise<void>;
   clearError: () => void;
 }

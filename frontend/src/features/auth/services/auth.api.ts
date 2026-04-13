@@ -29,3 +29,13 @@ export const socialLogin = async (code: string): Promise<AuthResponse> => {
   const response = await api.post<AuthResponse>('/auth/social-login', { code });
   return response.data;
 };
+
+export const updateUserRole = async (role: string): Promise<AuthResponse> => {
+  const response = await api.put<AuthResponse>('/auth/role', { role });
+  return response.data;
+};
+
+export const updateLocation = async (latitude: number, longitude: number, address?: string): Promise<AuthResponse> => {
+  const response = await api.patch<AuthResponse>('/auth/location', { latitude, longitude, address });
+  return response.data;
+};

@@ -58,11 +58,18 @@ api.interceptors.response.use(
     const is401 = error.response?.status === 401;
     const isRetry = originalRequest._retry === true;
     const isRefreshEndpoint = originalRequest.url === '/auth/refresh-token';
+    const isAuthEndpoint = originalRequest.url === '/auth/login' || 
+                           originalRequest.url === '/auth/register' || 
+                           originalRequest.url === '/auth/social-login';
 
     // Only retry valid 401 cases
-    if (!is401 || isRetry || isRefreshEndpoint) {
+    if (!is401 || isRetry || isRefreshEndpoint || isAuthEndpoint) {
       if (is401) {
-        console.warn('[Auth] 401 detected but skipping retry:', { isRetry, isRefreshEndpoint });
+        console.warn('[Auth] 401 detected but skipping retry (Auth entry point or retry limit reached):', { 
+          url: originalRequest.url, 
+          isRetry, 
+          isAuthEndpoint 
+        });
       }
       return Promise.reject(error);
     }

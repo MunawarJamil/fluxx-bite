@@ -9,7 +9,8 @@ export interface IUser extends Document {
   email: string;
   password?: string;
   image?: string | null;
-  role: 'customer' | 'rider' | 'seller';
+  role: 'customer' | 'rider' | 'seller' | null;
+  roleSelected: boolean;
   provider: 'google' | 'local';
   providerId?: string;
   refreshToken?: string | null;
@@ -17,6 +18,11 @@ export interface IUser extends Document {
   rotationTimestamp?: Date | null;
   createdAt: Date;
   updatedAt: Date;
+  location?: {
+    type: 'Point';
+    coordinates: [number, number];
+  };
+  address?: string;
   matchPassword(enteredPassword: string): Promise<boolean>;
 }
 
@@ -48,8 +54,13 @@ const UserSchema: Schema = new Schema(
 
     role: {
       type: String,
-      enum: ['customer', 'rider', 'seller'],
-      default: 'customer',
+      enum: ['customer', 'rider', 'seller', null],
+      default: null,
+    },
+ 
+    roleSelected: {
+      type: Boolean,
+      default: false,
     },
 
     provider: {
@@ -74,6 +85,21 @@ const UserSchema: Schema = new Schema(
     },
     rotationTimestamp: {
       type: Date,
+    },
+    location: {
+      type: {
+        type: String,
+        enum: ['Point'],
+        default: 'Point',
+      },
+      coordinates: {
+        type: [Number],
+        default: [0, 0],
+      },
+    },
+    address: {
+      type: String,
+      default: '',
     },
   },
   {
@@ -105,5 +131,8 @@ UserSchema.methods.matchPassword = async function (enteredPassword: string): Pro
   return crypto.timingSafeEqual(keyBuffer, derivedKey);
 };
 
+
+
+UserSchema.index({ location: '2dsphere' });
 
 export default mongoose.model<IUser>('User', UserSchema);

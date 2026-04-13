@@ -1,5 +1,5 @@
 import express from 'express';
-import { addUserRole, login, logout, myProfile, refreshToken, register, socialLogin, testAuth } from '../controllers/auth.js';
+import { addUserRole, login, logout, myProfile, refreshToken, register, socialLogin, testAuth, updateLocation } from '../controllers/auth.js';
 import { isAuth } from '../middleware/isAuth.js';
 import { loginLimiter, refreshLimiter } from '../middleware/rateLimiter.js';
 
@@ -22,6 +22,7 @@ router.get('/me', isAuth, myProfile);
  * Description: Assign role to user
  */
 router.put('/role', isAuth, addUserRole);
+router.patch('/location', isAuth, updateLocation);
 
 router.post('/register', register);
 router.post('/login', loginLimiter, login);

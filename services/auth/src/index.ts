@@ -12,6 +12,21 @@ if (process.env.DNS_SERVERS && process.env.NODE_ENV === 'development') {
     dns.setServers(process.env.DNS_SERVERS.split(','));
 }
 const app = express();
+
+
+console.log("ENV CHECK:", {
+    mongo: !!process.env.MONGO_URI,
+    jwt: !!process.env.JWT_ACCESS_SECRET,
+});
+
+// ✅ Global error handlers (IMPORTANT)
+process.on("uncaughtException", (err) => {
+    console.error("UNCAUGHT EXCEPTION:", err);
+});
+
+process.on("unhandledRejection", (err) => {
+    console.error("UNHANDLED REJECTION:", err);
+});
 const PORT = process.env.PORT || 5000;
 
 app.use(cookieParser());
@@ -39,9 +54,20 @@ app.use('/api/v1/auth', authRoutes);
 // Error Handler Middleware (Should be last)
 app.use(errorHandler);
 
-// Start server
-app.listen(PORT, () => {
-    // Connect to Database
-    connect_db();
-    console.log(`Server is running on port ${PORT}`);
-});
+// Startup sequence
+const startServer = async () => {
+    try {
+        // 1. Connect to Database FIRST
+        await connect_db();
+
+        // 2. Start listening ONLY after DB is ready
+        app.listen(PORT, () => {
+            console.log(`[Auth Service]: Server running in ${process.env.NODE_ENV} mode on port ${PORT}`);
+        });
+    } catch (error) {
+        console.error('[Auth Service]: Failed to start server:', error);
+        process.exit(1);
+    }
+};
+
+startServer();
