@@ -1,4 +1,5 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../features/auth/hooks/useAuth';
 import { 
   ShoppingBag, 
@@ -12,6 +13,7 @@ import {
 
 const Home: React.FC = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
 
   const getRoleData = () => {
     switch (user?.role) {
@@ -98,7 +100,10 @@ const Home: React.FC = () => {
           <div className="relative z-10">
             <h3 className="text-2xl font-bold text-slate-900 mb-2">My Profile</h3>
             <p className="text-slate-500 mb-6 font-medium">Manage your account settings and preferences.</p>
-            <button className="bg-slate-900 text-white px-6 py-3 rounded-xl font-bold flex items-center hover:bg-slate-800 transition-all">
+            <button 
+              onClick={() => navigate('/profile')}
+              className="bg-slate-900 text-white px-6 py-3 rounded-xl font-bold flex items-center hover:bg-slate-800 transition-all"
+            >
               Go to Profile <ChevronRight className="ml-2 w-4 h-4" />
             </button>
           </div>

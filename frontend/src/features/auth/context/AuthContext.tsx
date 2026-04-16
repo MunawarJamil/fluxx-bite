@@ -9,6 +9,7 @@ import type {
   RegisterFormData
 } from '../types/auth.types';
 import * as authApi from '../services/auth.api';
+import axios from 'axios';
 import toast from 'react-hot-toast';
 
 const initialState: AuthState = {
@@ -24,6 +25,35 @@ type AuthAction =
   | { type: 'AUTH_FAILURE'; payload: string }
   | { type: 'LOGOUT' }
   | { type: 'CLEAR_ERROR' };
+
+/**
+ * Extracts a user-friendly error message from an axios error or unknown error.
+ * Checks response.data.message (primary), response.data.error (legacy fallback),
+ * network errors, and unknown error shapes.
+ */
+const extractErrorMessage = (error: unknown, fallback: string): string => {
+  if (axios.isAxiosError(error)) {
+    // Server responded with an error status
+    if (error.response?.data) {
+      const data = error.response.data;
+      if (typeof data.message === 'string' && data.message) return data.message;
+      if (typeof data.error === 'string' && data.error) return data.error;
+    }
+    // Network error (no response from server)
+    if (error.code === 'ERR_NETWORK') {
+      return 'Unable to connect to the server. Please check your connection.';
+    }
+    // Request timed out
+    if (error.code === 'ECONNABORTED') {
+      return 'Request timed out. Please try again.';
+    }
+  }
+  // Non-axios error with a message
+  if (error instanceof Error && error.message) {
+    return error.message;
+  }
+  return fallback;
+};
 
 // Centralized Reducer function to handle state updates
 const authReducer = (state: AuthState, action: AuthAction): AuthState => {
@@ -97,8 +127,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       const response = await authApi.login(data);
       dispatch({ type: 'AUTH_SUCCESS', payload: response.data });
       toast.success('Welcome back!');
-    } catch (error: any) {
-      const message = error.response?.data?.message || 'Login failed';
+    } catch (error: unknown) {
+      const message = extractErrorMessage(error, 'Login failed');
       dispatch({ type: 'AUTH_FAILURE', payload: message });
       toast.error(message);
       throw error;
@@ -111,8 +141,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       const response = await authApi.register(data);
       dispatch({ type: 'AUTH_SUCCESS', payload: response.data });
       toast.success('Account created successfully!');
-    } catch (error: any) {
-      const message = error.response?.data?.message || 'Registration failed';
+    } catch (error: unknown) {
+      const message = extractErrorMessage(error, 'Registration failed');
       dispatch({ type: 'AUTH_FAILURE', payload: message });
       toast.error(message);
       throw error;
@@ -125,8 +155,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       const response = await authApi.socialLogin(idToken);
       dispatch({ type: 'AUTH_SUCCESS', payload: response.data });
       toast.success('Login successful!');
-    } catch (error: any) {
-      const message = error.response?.data?.message || 'Social login failed';
+    } catch (error: unknown) {
+      const message = extractErrorMessage(error, 'Social login failed');
       dispatch({ type: 'AUTH_FAILURE', payload: message });
       toast.error(message);
       throw error;
@@ -149,8 +179,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       const response = await authApi.updateUserRole(role);
       dispatch({ type: 'AUTH_SUCCESS', payload: response.data });
       toast.success(`Role updated to ${role}`);
-    } catch (error: any) {
-      const message = error.response?.data?.message || 'Role update failed';
+    } catch (error: unknown) {
+      const message = extractErrorMessage(error, 'Role update failed');
       dispatch({ type: 'AUTH_FAILURE', payload: message });
       toast.error(message);
       throw error;
@@ -163,13 +193,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       const response = await authApi.updateLocation(latitude, longitude, address);
       dispatch({ type: 'AUTH_SUCCESS', payload: response.data });
       toast.success('Location updated successfully!');
-    } catch (error: any) {
-      const message = error.response?.data?.message || 'Location update failed';
+    } catch (error: unknown) {
+      const message = extractErrorMessage(error, 'Location update failed');
       dispatch({ type: 'AUTH_FAILURE', payload: message });
-      // We don't necessarily want to log out the user if location update fails, 
-      // but the reducer currently clears the user on failure. 
-      // Actually, my reducer for AUTH_FAILURE sets user to null. 
-      // I should probably add a more granular action for "UPDATE_FAILURE" that doesn't clear the user.
       toast.error(message);
       throw error;
     }

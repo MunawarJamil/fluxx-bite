@@ -1,9 +1,9 @@
-import React from 'react';
-import { 
-  User as UserIcon, 
-  Mail, 
-  Shield, 
-  Calendar, 
+import React, { useState } from 'react';
+import {
+  User as UserIcon,
+  Mail,
+  Shield,
+  Calendar,
   ExternalLink,
   Camera,
   MapPin,
@@ -15,52 +15,102 @@ import toast from 'react-hot-toast';
 
 const Profile: React.FC = () => {
   const { user, updateLocation } = useAuth();
-  const [isUpdatingLocation, setIsUpdatingLocation] = React.useState(false);
+  const [city, setCity] = useState('');
+  const [isUpdatingLocation, setIsUpdatingLocation] = useState(false);
 
-  const handleUpdateLocation = () => {
-    if (!navigator.geolocation) {
+  // ✅ Success Handler
+  const handleSuccess = async (position: GeolocationPosition) => {
+    const { latitude, longitude } = position.coords;
+
+    console.log("LAT LNG:", latitude, longitude);
+
+    try {
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`,
+        {
+          headers: {
+            'Accept-Language': 'en-US,en;q=0.9',
+          }
+        }
+      );
+
+      const data = await response.json();
+      const address = data.display_name || 'Location saved';
+
+      await updateLocation(latitude, longitude, address);
+
+      setCity(
+        data?.address?.city ||
+        data?.address?.town ||
+        data?.address?.village ||
+        'Location saved'
+      );
+
+    } catch (error) {
+      console.error('Error fetching address:', error);
+
+      // fallback
+      await updateLocation(latitude, longitude, 'Coordinates saved');
+    } finally {
+      setIsUpdatingLocation(false);
+    }
+  };
+
+  // ❌ Error Handler
+  const handleError = (error: GeolocationPositionError) => {
+    setIsUpdatingLocation(false);
+
+    console.log("Geolocation error:", error);
+
+    if (error.code === 1) {
+      toast.error('Permission denied. Please allow location access.');
+    } else if (error.code === 2) {
+      toast.error('Location unavailable. Turn on location services.');
+    } else if (error.code === 3) {
+      toast.error('Location request timed out.');
+    } else {
+      toast.error('Failed to fetch location.');
+    }
+  };
+
+  // 🔥 MAIN FUNCTION (FIXED FLOW)
+  const handleUpdateLocation = async () => {
+    if (!('geolocation' in navigator)) {
       toast.error('Geolocation is not supported by your browser');
       return;
     }
 
     setIsUpdatingLocation(true);
-    navigator.geolocation.getCurrentPosition(
-      async (position) => {
-        const { latitude, longitude } = position.coords;
-        try {
-          // Reverse geocoding using Nominatim (OpenStreetMap)
-          // Adding a custom User-Agent as required by Nominatim usage policy
-          const response = await fetch(
-            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`,
-            {
-              headers: {
-                'Accept-Language': 'en-US,en;q=0.9',
-              }
-            }
-          );
-          const data = await response.json();
-          const address = data.display_name || 'Location saved';
-          
-          await updateLocation(latitude, longitude, address);
-        } catch (error) {
-          console.error('Error fetching address:', error);
-          // Still update coordinates even if reverse geocoding fails
-          await updateLocation(latitude, longitude, 'Coordinates saved');
-        } finally {
-          setIsUpdatingLocation(false);
-        }
-      },
-      (error) => {
+
+    try {
+      const permission = await navigator.permissions.query({
+        name: 'geolocation' as PermissionName
+      });
+
+      console.log("Permission state:", permission.state);
+
+      // ❌ Blocked
+      if (permission.state === 'denied') {
+        toast.error('Location permission is blocked. Please enable it from browser settings.');
         setIsUpdatingLocation(false);
-        const messages: Record<number, string> = {
-          [error.PERMISSION_DENIED]: 'Location access denied by user.',
-          [error.POSITION_UNAVAILABLE]: 'Location information is unavailable.',
-          [error.TIMEOUT]: 'Location request timed out.',
-        };
-        toast.error(messages[error.code] || 'An unknown error occurred while fetching location.');
-      },
-      { enableHighAccuracy: true, timeout: 10000 }
-    );
+        return;
+      }
+
+      // ⚠️ Prompt OR ✅ Granted → request location
+      navigator.geolocation.getCurrentPosition(
+        handleSuccess,
+        handleError,
+        {
+          enableHighAccuracy: true,
+          timeout: 10000,
+        }
+      );
+
+    } catch (error) {
+      console.error("Permission error:", error);
+      toast.error('Unable to access location permissions');
+      setIsUpdatingLocation(false);
+    }
   };
 
   if (!user) {
@@ -99,13 +149,13 @@ const Profile: React.FC = () => {
         <div className="h-48 w-full bg-linear-to-r from-indigo-600 via-purple-600 to-teal-500 rounded-3xl opacity-90 shadow-2xl overflow-hidden">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_50%,rgba(255,255,255,0.1),transparent)]" />
         </div>
-        
+
         <div className="absolute -bottom-12 left-8 flex items-end space-x-6">
           <div className="relative group">
             {user.image ? (
-              <img 
-                src={user.image} 
-                alt={user.name} 
+              <img
+                src={user.image}
+                alt={user.name}
                 className="w-32 h-32 rounded-3xl border-4 border-white shadow-xl object-cover"
               />
             ) : (
@@ -117,7 +167,7 @@ const Profile: React.FC = () => {
               <Camera className="w-4 h-4" />
             </button>
           </div>
-          
+
           <div className="pb-4">
             <h1 className="text-3xl font-black text-slate-900 tracking-tight">{user.name}</h1>
             <div className="flex items-center text-slate-500 font-medium max-w-md">
@@ -149,14 +199,14 @@ const Profile: React.FC = () => {
           <div className="bg-white rounded-3xl p-6 shadow-sm border border-slate-100">
             <h3 className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-4">Quick Stats</h3>
             <div className="space-y-4">
-               <div className="flex justify-between items-center text-sm">
-                 <span className="text-slate-500">Orders Processed</span>
-                 <span className="font-bold text-slate-900">0</span>
-               </div>
-               <div className="flex justify-between items-center text-sm">
-                 <span className="text-slate-500">Member Since</span>
-                 <span className="font-bold text-slate-900">{new Date(user.createdAt).getFullYear()}</span>
-               </div>
+              <div className="flex justify-between items-center text-sm">
+                <span className="text-slate-500">Orders Processed</span>
+                <span className="font-bold text-slate-900">0</span>
+              </div>
+              <div className="flex justify-between items-center text-sm">
+                <span className="text-slate-500">Member Since</span>
+                <span className="font-bold text-slate-900">{new Date(user.createdAt).getFullYear()}</span>
+              </div>
             </div>
           </div>
         </div>
@@ -191,23 +241,23 @@ const Profile: React.FC = () => {
 
           {/* Action Buttons */}
           <div className="flex justify-end space-x-4 pt-4">
-             <button className="px-6 py-3 bg-slate-100 text-slate-600 font-bold rounded-2xl hover:bg-slate-200 transition-all active:scale-95">
-               Download Data
-             </button>
-             <button 
-               onClick={handleUpdateLocation}
-               disabled={isUpdatingLocation}
-               className="px-8 py-3 bg-indigo-600 text-white font-black rounded-2xl hover:bg-indigo-700 shadow-lg shadow-indigo-100 transition-all active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed flex items-center"
-             >
-               {isUpdatingLocation ? (
-                 <>
-                   <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2" />
-                   Updating...
-                 </>
-               ) : (
-                 'Update Location'
-               )}
-             </button>
+            <button className="px-6 py-3 bg-slate-100 text-slate-600 font-bold rounded-2xl hover:bg-slate-200 transition-all active:scale-95">
+              Download Data
+            </button>
+            <button
+              onClick={handleUpdateLocation}
+              disabled={isUpdatingLocation}
+              className="px-8 py-3 bg-indigo-600 text-white font-black rounded-2xl hover:bg-indigo-700 shadow-lg shadow-indigo-100 transition-all active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed flex items-center"
+            >
+              {isUpdatingLocation ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2" />
+                  Updating...
+                </>
+              ) : (
+                'Update Location'
+              )}
+            </button>
           </div>
         </div>
       </div>
