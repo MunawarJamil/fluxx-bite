@@ -3,7 +3,7 @@ import jwt, { JwtPayload } from 'jsonwebtoken';
 import asyncHandler from '../utils/asyncHandler.js';
 import ErrorResponse from '../utils/ErrorResponse.js';
 export interface IUser {
-  _id: string;
+  id: string;
   name: string;
   email: string;
   role: string;
@@ -17,12 +17,12 @@ export const isAuth = asyncHandler(
   async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
     let token: string | undefined;
 
-    // ✅ 1. Try to get token from cookies (PRIMARY - production)
+    // ✅ 1. Try to get token from cookies
     if (req.cookies?.accessToken) {
       token = req.cookies.accessToken;
     }
 
-    // ✅ 2. Fallback to Authorization header (for Postman/testing)
+    // ✅ 2. Fallback to Authorization header
     else if (
       req.headers.authorization &&
       req.headers.authorization.startsWith('Bearer ')
@@ -43,20 +43,27 @@ export const isAuth = asyncHandler(
         throw new Error('JWT_ACCESS_SECRET is not defined');
       }
 
-      const decoded = jwt.verify(token, JWT_ACCESS_SECRET) as JwtPayload & { id: string };
+      const decoded = jwt.verify(token, JWT_ACCESS_SECRET) as JwtPayload & {
+        id: string;
+        role: string;
+        type: string
+      };
 
       if (decoded.type !== 'access') {
         return next(new ErrorResponse('Invalid token type', 401));
       }
-      // ✅ 4. Get user (safe)
-      // const user = await User.findById(decoded.id).select('-refreshToken');
 
-      // if (!user) {
-      //   return next(new ErrorResponse('User not found', 404));
-      // }
+      if (decoded.role !== 'seller') {
+        return next(new ErrorResponse('Only seller is allowed to create restaurant', 403));
+      }
 
-      // // ✅ 5. Attach user to request
-      // req.user = user;
+      // ✅ 4. Attach user info to request (from token payload)
+      req.user = {
+        id: decoded.id,
+        role: decoded.role,
+        // email and name could be added if included in token, 
+        // but id and role are sufficient for authorization.
+      } as IUser;
 
       next();
     } catch (err) {
@@ -64,6 +71,7 @@ export const isAuth = asyncHandler(
       if (err instanceof jwt.TokenExpiredError) {
         return next(new ErrorResponse('Token expired', 401));
       }
+      return next(new ErrorResponse('Not authorized', 401));
     }
   }
 );

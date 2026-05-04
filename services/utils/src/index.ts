@@ -3,7 +3,7 @@ import dotenv from "dotenv";
 import cors from "cors";
 import helmet from "helmet";
 import morgan from "morgan";
-
+import uploadRoutes from "./routes/upload.route.js";
 dotenv.config();
 
 const app = express();
@@ -17,15 +17,15 @@ app.use(cors());
 // HTTP request logging
 app.use(morgan("dev"));
 // Parse JSON bodies payload
-app.use(express.json());
+app.use(express.json({ limit: "50mb" }));
 // Parse URL-encoded bodies
 app.use(express.urlencoded({ extended: true }));
 
 // --- Application Routes ---
 app.get("/health", (req: Request, res: Response) => {
-  res.status(200).json({ 
-    status: "success", 
-    message: "Utils service is healthy and running" 
+  res.status(200).json({
+    status: "success",
+    message: "Utils service is healthy and running"
   });
 });
 
@@ -39,15 +39,18 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 
 // --- Global Error Handler ---
 app.use((err: any, req: Request, res: Response, next: NextFunction) => {
-  console.error("Error 💥:", err);
+  console.error("Error:", err);
   const statusCode = err.statusCode || 500;
-  
+
   res.status(statusCode).json({
     status: "error",
     message: err.message || "Internal Server Error",
     stack: process.env.NODE_ENV === "production" ? undefined : err.stack,
   });
 });
+
+// --- Application Routes ---
+app.use("/api/v1/utils", uploadRoutes);
 
 // --- Server Initialization ---
 const server = app.listen(PORT, () => {
@@ -56,7 +59,7 @@ const server = app.listen(PORT, () => {
 
 // --- Graceful Shutdown Management ---
 process.on("unhandledRejection", (err: Error) => {
-  console.error("Unhandled Rejection! 💥 Shutting down...");
+  console.error("Unhandled Rejection! Shutting down...");
   console.error(err.name, err.message);
   server.close(() => {
     process.exit(1);

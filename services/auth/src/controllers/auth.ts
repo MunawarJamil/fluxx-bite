@@ -153,7 +153,7 @@ export const socialLogin = asyncHandler(
     }
 
     // 4. Generate tokens
-    const { accessToken, refreshToken } = generateTokens(user._id.toString());
+    const { accessToken, refreshToken } = generateTokens(user._id.toString(), user.role);
 
     // 5. Hash refresh token before saving (SECURITY)
     const hashedRefreshToken = crypto
@@ -224,10 +224,12 @@ export const register = asyncHandler(
       email,
       password,
       provider: 'local',
+      role
+
     });
 
     // 3. Generate tokens
-    const { accessToken, refreshToken } = generateTokens(user._id.toString());
+    const { accessToken, refreshToken } = generateTokens(user._id.toString(), user.role);
 
     // 4. Hash refresh token before saving (SECURITY)
     const hashedRefreshToken = crypto
@@ -261,6 +263,7 @@ export const register = asyncHandler(
         email: user.email,
         role: user.role,
         roleSelected: user.roleSelected,
+
       },
     });
   }
@@ -292,7 +295,7 @@ export const login = asyncHandler(
     }
 
     // 3. Generate tokens
-    const { accessToken, refreshToken } = generateTokens(user._id.toString());
+    const { accessToken, refreshToken } = generateTokens(user._id.toString(), user.role);
 
     // 4. Hash refresh token (SECURITY)
     const hashedRefreshToken = crypto
@@ -327,6 +330,9 @@ export const login = asyncHandler(
         role: user.role,
         image: user.image,
         roleSelected: user.roleSelected,
+        tokenType: "access",
+        accessToken: accessToken,
+        refreshToken: refreshToken,
       },
     });
   }
@@ -362,20 +368,20 @@ export const refreshToken = asyncHandler(async (req, res, next) => {
     }
 
     // 1. Try to find user with the current refresh token
-    let user = await User.findOne({ refreshToken: hashedToken }).select('+refreshToken +oldRefreshToken +rotationTimestamp');
+    let user = await User.findOne({ refreshToken: hashedToken }).select('+refreshToken +oldRefreshToken +rotationTimestamp +role');
 
     // 2. If not found, check if it's a recently rotated "old" token (grace period for race conditions)
     if (!user) {
-      user = await User.findOne({ oldRefreshToken: hashedToken }).select('+refreshToken +oldRefreshToken +rotationTimestamp');
+      user = await User.findOne({ oldRefreshToken: hashedToken }).select('+refreshToken +oldRefreshToken +rotationTimestamp +role');
 
       if (user && user.rotationTimestamp) {
         const timeSinceRotation = Date.now() - user.rotationTimestamp.getTime();
-        
+
         // If used within 10 seconds of a rotation, allow it as a parallel request
         if (timeSinceRotation < 10000) {
-          return res.status(200).json({ 
-            success: true, 
-            message: 'Concurrent refresh handled' 
+          return res.status(200).json({
+            success: true,
+            message: 'Concurrent refresh handled'
           });
         }
       }
@@ -386,7 +392,7 @@ export const refreshToken = asyncHandler(async (req, res, next) => {
 
     // 🔥 ROTATION STARTS HERE
     //  Generate NEW tokens
-    const { accessToken, refreshToken: newRefreshToken } = generateTokens(user._id.toString());
+    const { accessToken, refreshToken: newRefreshToken } = generateTokens(user._id.toString(), user.role);
 
     const hashedNewToken = crypto
       .createHash('sha256')
@@ -471,7 +477,7 @@ export const updateLocation = asyncHandler(
     }
 
     if (!req.user?._id) {
-       return next(new ErrorResponse('Not authorized', 401));
+      return next(new ErrorResponse('Not authorized', 401));
     }
 
     const user = await User.findByIdAndUpdate(
