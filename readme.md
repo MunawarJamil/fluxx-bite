@@ -303,4 +303,272 @@ Category → MenuItem      (1:N)
     
 
 
-    
+    ============================================================
+
+
+    # 🍽️ FLUX-BITE — Menu & MenuItem System Design
+
+## 📌 Overview
+
+This document defines the **Menu Management System** for Fluxx_Bite.
+
+It covers:
+
+* Data modeling
+* Relationships
+* API structure
+* Business rules
+* Scalability considerations
+
+---
+
+# 🧠 Design Philosophy
+
+* Keep schema **simple and scalable**
+* Avoid unnecessary joins
+* Optimize for **read-heavy traffic (50k+ users)**
+* Ensure **strict ownership control**
+* Design APIs for **frontend efficiency**
+
+---
+
+# 🗃️ Final Data Model
+
+## 🏪 Restaurant (Already Implemented)
+
+No changes required.
+
+---
+
+## 🧩 Category
+
+Represents logical grouping of menu items (e.g., Burgers, Drinks).
+
+```ts
+Category {
+  id: string
+  restaurantId: string
+  name: string
+  createdAt: Date
+}
+```
+
+---
+
+## 🍔 MenuItem
+
+Represents individual food items.
+
+```ts
+MenuItem {
+  id: string
+  restaurantId: string
+  categoryId: string
+  name: string
+  description: string
+  price: number
+  isAvailable: boolean
+  imageUrl: string
+  createdAt: Date
+}
+```
+
+---
+
+# ⚠️ Important Design Decision
+
+❌ No `Menu` table (removed intentionally)
+
+### Reason:
+
+* Reduces complexity
+* Avoids unnecessary joins
+* Categories are sufficient for grouping
+* Faster queries under high traffic
+
+---
+
+# 🔗 Relationships
+
+```
+Restaurant → Category   (1:N)
+Restaurant → MenuItem   (1:N)
+Category   → MenuItem   (1:N)
+```
+
+---
+
+# 🚀 API Design
+
+---
+
+## 📂 CATEGORY APIs
+
+### 1. Create Category
+
+```
+POST /restaurants/:restaurantId/categories
+```
+
+---
+
+### 2. Get Categories by Restaurant
+
+```
+GET /restaurants/:restaurantId/categories
+```
+
+---
+
+### 3. Update Category
+
+```
+PATCH /categories/:id
+```
+
+---
+
+### 4. Delete Category
+
+```
+DELETE /categories/:id
+```
+
+---
+
+## 🍔 MENU ITEM APIs
+
+---
+
+### 1. Create Menu Item
+
+```
+POST /categories/:categoryId/items
+```
+
+---
+
+### 2. Get Full Menu (Grouped) ⭐
+
+```
+GET /restaurants/:restaurantId/menu
+```
+
+### Response Shape:
+
+```json
+[
+  {
+    "category": "Burgers",
+    "items": [...]
+  }
+]
+```
+
+---
+
+### 3. Update Menu Item
+
+```
+PATCH /items/:id
+```
+
+---
+
+### 4. Delete Menu Item
+
+```
+DELETE /items/:id
+```
+
+---
+
+# 🔐 Authorization Rules
+
+* A user can only manage:
+
+  * Their own restaurant
+  * Their categories
+  * Their menu items
+
+---
+
+# 🧠 Business Rules
+
+* Category must belong to a restaurant
+* MenuItem must belong to:
+
+  * A valid category
+  * The same restaurant
+* Price must be greater than 0
+* Item must be `isAvailable = true` to be ordered
+* Restaurant must be open to accept orders
+
+---
+
+# ⚡ Performance & Scalability
+
+## ✅ Query Strategy
+
+* Always query using `restaurantId`
+* Avoid deep joins
+* Use selective fields (`select` in Prisma)
+
+---
+
+## ✅ Indexing (Required)
+
+```prisma
+Category {
+  @@index([restaurantId])
+}
+
+MenuItem {
+  @@index([restaurantId])
+  @@index([categoryId])
+}
+```
+
+---
+
+## ✅ Optimization Ready
+
+Future enhancements:
+
+* Redis caching (menu & categories)
+* CDN for images
+* Read replicas for scaling
+
+---
+
+# 🧱 Implementation Order
+
+Follow this sequence:
+
+1. Category Module
+
+   * createCategory
+   * getCategoriesByRestaurant
+   * updateCategory
+   * deleteCategory
+
+2. MenuItem Module
+
+   * createItem
+   * updateItem
+   * deleteItem
+
+3. Menu Fetch API
+
+   * grouped menu by category
+
+---
+
+# 🎯 Goals of This Design
+
+* Clean architecture
+* Scalable for high traffic
+* Easy frontend integration
+* Minimal future refactoring
+
+---

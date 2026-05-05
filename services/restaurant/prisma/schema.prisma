@@ -1,27 +1,79 @@
 generator client {
-  provider = "prisma-client-js"
+provider = "prisma-client-js"
+output   = "../src/generated/client"
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+provider = "postgresql"
+url      = env("DATABASE_URL")
 }
 
 model Restaurant {
-  id          String   @id @default(uuid())
-  ownerId     String
-  name        String
-  description String?
-  address     String
-  latitude    Float
-  longitude   Float
-  isOpen      Boolean  @default(true)
-  isVerified  Boolean  @default(false)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+id          String   @id @default(uuid())
+ownerId     String
+name        String
+description String?
+address     String
+latitude    Float
+longitude   Float
+isOpen      Boolean  @default(true)
+isVerified  Boolean  @default(false)
+isDeleted   Boolean  @default(false)
+createdAt   DateTime @default(now())
+updatedAt   DateTime @updatedAt
 
-  @@index([ownerId])              // getMyRestaurant — avoids full table scan
-  @@index([latitude, longitude])  // nearby restaurants query
-  @@index([isOpen])               // filter active restaurants
-  @@index([name])                 // restaurant name search
+// Relations
+categories  Category[]
+menuItems   MenuItem[]
+
+// Indexes (Optimized for scale)
+@@index([ownerId])
+@@index([latitude, longitude])
+@@index([isOpen])
+@@index([isDeleted])
+@@index([createdAt])
+@@index([name])
+
+
+}
+
+
+
+model Category {
+id            String      @id @default(uuid())
+restaurantId  String
+name          String
+createdAt     DateTime    @default(now())
+
+// Relations
+restaurant    Restaurant  @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+menuItems     MenuItem[]
+
+// Indexes
+@@index([restaurantId])
+@@unique([restaurantId, name]) // prevent duplicate category names per restaurant
+}
+
+model MenuItem {
+id            String      @id @default(uuid())
+restaurantId  String
+categoryId    String
+name          String
+description   String?
+price         Decimal @db.Decimal(10, 2)
+isAvailable   Boolean     @default(true)
+imageUrl      String?
+createdAt     DateTime    @default(now())
+updatedAt     DateTime    @updatedAt
+
+// Relations
+restaurant    Restaurant  @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+category      Category    @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+// Indexes (CRITICAL for performance)
+@@index([restaurantId])
+@@index([categoryId])
+@@index([isAvailable])
+@@index([createdAt])
+@@index([restaurantId, categoryId])
 }
