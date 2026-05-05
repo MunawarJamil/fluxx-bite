@@ -51,6 +51,6 @@ export const createRestaurant = async (
 
 export const getRestaurantByOwnerId = async (ownerId: string) => {
     return prisma.restaurant.findFirst({
-        where: { id: ownerId },
+        where: { ownerId },
     });
 };

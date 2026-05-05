@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import ErrorResponse from '../utils/ErrorResponse.js';
 import config from '../config/index.js';
-
+import { ZodError } from "zod";
 const errorHandler = (err: any, req: Request, res: Response, next: NextFunction) => {
   let error = { ...err };
   error.message = err.message;
@@ -31,10 +31,29 @@ const errorHandler = (err: any, req: Request, res: Response, next: NextFunction)
   }
 
   // Zod Validation error
-  if (err.name === 'ZodError') {
-    const message = err.issues.map((issue: any) => `${issue.path.join('.')}: ${issue.message}`).join(', ');
-    error = new ErrorResponse(message, 400);
+  if (err instanceof ZodError) {
+    const errors: Record<string, string> = {};
+
+    err.issues.forEach((issue) => {
+      const field = issue.path.join(".");
+      errors[field] = issue.message;
+    });
+
+    return res.status(400).json({
+      success: false,
+      message: "Validation failed",
+      errors,
+    });
   }
+
+  // ✅ JSON Parse Error (body-parser / express.json)
+  if (err instanceof SyntaxError && "body" in err) {
+    return res.status(400).json({
+      success: false,
+      message: "Invalid JSON format in request body",
+    });
+  }
+
 
   // Generic Validation error
   if (err.name === 'ValidationError') {

@@ -53,10 +53,6 @@ export const isAuth = asyncHandler(
         return next(new ErrorResponse('Invalid token type', 401));
       }
 
-      if (decoded.role !== 'seller') {
-        return next(new ErrorResponse('Only seller is allowed to create restaurant', 403));
-      }
-
       // ✅ 4. Attach user info to request (from token payload)
       req.user = {
         id: decoded.id,

@@ -19,4 +19,9 @@ model Restaurant {
   isVerified  Boolean  @default(false)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+
+  @@index([ownerId])              // getMyRestaurant — avoids full table scan
+  @@index([latitude, longitude])  // nearby restaurants query
+  @@index([isOpen])               // filter active restaurants
+  @@index([name])                 // restaurant name search
 }

@@ -31,9 +31,9 @@ if (config.env === 'development') {
     app.use(morgan('combined'));
 }
 
-// Body Parsers
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+// Body Parsers (with size limit to prevent DoS)
+app.use(express.json({ limit: '10kb' }));
+app.use(express.urlencoded({ extended: true, limit: '10kb' }));
 app.use(cookieParser());
 
 // Health Check

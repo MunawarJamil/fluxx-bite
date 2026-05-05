@@ -3,6 +3,7 @@ import { AuthenticatedRequest } from "../../middleware/isAuth.js";
 import { createRestaurantSchema } from "./restaurant.validation.js";
 import * as restaurantService from "./restaurant.service.js";
 import ErrorResponse from "../../utils/ErrorResponse.js";
+import logger from "../../utils/logger.js";
 
 
 
@@ -64,26 +65,29 @@ export const createRestaurant = async (
 
 
 
-export const getMyRestaurant = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+export const getMyRestaurant = async (
+    req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction
+) => {
     try {
-        if (!req.user?.id) {
+        const userId = req.user?.id;
+
+        if (!userId) {
             return next(new ErrorResponse("User not authenticated", 401));
         }
 
-        const restaurant = await restaurantService.getRestaurantByOwnerId(req.user.id);
+        const restaurant = await restaurantService.getRestaurantByOwnerId(userId);
 
         if (!restaurant) {
-            return res.status(200).json({
-                success: true,
-                message: "No restaurant found for this owner",
-                data: null
-            });
+            return next(new ErrorResponse("Restaurant not found", 404));
         }
 
-        res.status(200).json({
+        return res.status(200).json({
             success: true,
             data: restaurant
         });
+
     } catch (error) {
         next(error);
     }
