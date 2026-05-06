@@ -9,6 +9,9 @@ import prisma from "./config/prisma.js";
 import errorHandler from "./middleware/error.js";
 import { apiLimiter } from "./middleware/rateLimiter.js";
 import restaurantRoutes from "./modules/restaurant/restaurant.routes.js";
+import categoryRoutes from "./modules/category/category.routes.js";
+import menuItemRoutes from "./modules/menu-item/menuItem.routes.js";
+
 
 const app = express();
 
@@ -54,6 +57,10 @@ app.get("/", (req, res) => {
 
 // API Routes  
 app.use("/api/v1/restaurant", restaurantRoutes);
+
+app.use("/api/v1", categoryRoutes);
+
+app.use("/api/v1", menuItemRoutes);
 
 // Error Handling Middleware
 app.use(errorHandler);

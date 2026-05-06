@@ -3138,11 +3138,11 @@ export namespace Prisma {
   }
 
   export type MenuItemAvgAggregateOutputType = {
-    price: number | null
+    price: Decimal | null
   }
 
   export type MenuItemSumAggregateOutputType = {
-    price: number | null
+    price: Decimal | null
   }
 
   export type MenuItemMinAggregateOutputType = {
@@ -3151,7 +3151,7 @@ export namespace Prisma {
     categoryId: string | null
     name: string | null
     description: string | null
-    price: number | null
+    price: Decimal | null
     isAvailable: boolean | null
     imageUrl: string | null
     createdAt: Date | null
@@ -3164,7 +3164,7 @@ export namespace Prisma {
     categoryId: string | null
     name: string | null
     description: string | null
-    price: number | null
+    price: Decimal | null
     isAvailable: boolean | null
     imageUrl: string | null
     createdAt: Date | null
@@ -3326,7 +3326,7 @@ export namespace Prisma {
     categoryId: string
     name: string
     description: string | null
-    price: number
+    price: Decimal
     isAvailable: boolean
     imageUrl: string | null
     createdAt: Date
@@ -3416,7 +3416,7 @@ export namespace Prisma {
       categoryId: string
       name: string
       description: string | null
-      price: number
+      price: Prisma.Decimal
       isAvailable: boolean
       imageUrl: string | null
       createdAt: Date
@@ -3821,7 +3821,7 @@ export namespace Prisma {
     readonly categoryId: FieldRef<"MenuItem", 'String'>
     readonly name: FieldRef<"MenuItem", 'String'>
     readonly description: FieldRef<"MenuItem", 'String'>
-    readonly price: FieldRef<"MenuItem", 'Float'>
+    readonly price: FieldRef<"MenuItem", 'Decimal'>
     readonly isAvailable: FieldRef<"MenuItem", 'Boolean'>
     readonly imageUrl: FieldRef<"MenuItem", 'String'>
     readonly createdAt: FieldRef<"MenuItem", 'DateTime'>
@@ -4295,6 +4295,20 @@ export namespace Prisma {
 
 
   /**
+   * Reference to a field of type 'Decimal'
+   */
+  export type DecimalFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Decimal'>
+    
+
+
+  /**
+   * Reference to a field of type 'Decimal[]'
+   */
+  export type ListDecimalFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Decimal[]'>
+    
+
+
+  /**
    * Reference to a field of type 'Int'
    */
   export type IntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int'>
@@ -4469,7 +4483,7 @@ export namespace Prisma {
     categoryId?: StringFilter<"MenuItem"> | string
     name?: StringFilter<"MenuItem"> | string
     description?: StringNullableFilter<"MenuItem"> | string | null
-    price?: FloatFilter<"MenuItem"> | number
+    price?: DecimalFilter<"MenuItem"> | Decimal | DecimalJsLike | number | string
     isAvailable?: BoolFilter<"MenuItem"> | boolean
     imageUrl?: StringNullableFilter<"MenuItem"> | string | null
     createdAt?: DateTimeFilter<"MenuItem"> | Date | string
@@ -4502,7 +4516,7 @@ export namespace Prisma {
     categoryId?: StringFilter<"MenuItem"> | string
     name?: StringFilter<"MenuItem"> | string
     description?: StringNullableFilter<"MenuItem"> | string | null
-    price?: FloatFilter<"MenuItem"> | number
+    price?: DecimalFilter<"MenuItem"> | Decimal | DecimalJsLike | number | string
     isAvailable?: BoolFilter<"MenuItem"> | boolean
     imageUrl?: StringNullableFilter<"MenuItem"> | string | null
     createdAt?: DateTimeFilter<"MenuItem"> | Date | string
@@ -4538,7 +4552,7 @@ export namespace Prisma {
     categoryId?: StringWithAggregatesFilter<"MenuItem"> | string
     name?: StringWithAggregatesFilter<"MenuItem"> | string
     description?: StringNullableWithAggregatesFilter<"MenuItem"> | string | null
-    price?: FloatWithAggregatesFilter<"MenuItem"> | number
+    price?: DecimalWithAggregatesFilter<"MenuItem"> | Decimal | DecimalJsLike | number | string
     isAvailable?: BoolWithAggregatesFilter<"MenuItem"> | boolean
     imageUrl?: StringNullableWithAggregatesFilter<"MenuItem"> | string | null
     createdAt?: DateTimeWithAggregatesFilter<"MenuItem"> | Date | string
@@ -4714,7 +4728,7 @@ export namespace Prisma {
     id?: string
     name: string
     description?: string | null
-    price: number
+    price: Decimal | DecimalJsLike | number | string
     isAvailable?: boolean
     imageUrl?: string | null
     createdAt?: Date | string
@@ -4729,7 +4743,7 @@ export namespace Prisma {
     categoryId: string
     name: string
     description?: string | null
-    price: number
+    price: Decimal | DecimalJsLike | number | string
     isAvailable?: boolean
     imageUrl?: string | null
     createdAt?: Date | string
@@ -4740,7 +4754,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
-    price?: FloatFieldUpdateOperationsInput | number
+    price?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     isAvailable?: BoolFieldUpdateOperationsInput | boolean
     imageUrl?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -4755,7 +4769,7 @@ export namespace Prisma {
     categoryId?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
-    price?: FloatFieldUpdateOperationsInput | number
+    price?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     isAvailable?: BoolFieldUpdateOperationsInput | boolean
     imageUrl?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -4768,7 +4782,7 @@ export namespace Prisma {
     categoryId: string
     name: string
     description?: string | null
-    price: number
+    price: Decimal | DecimalJsLike | number | string
     isAvailable?: boolean
     imageUrl?: string | null
     createdAt?: Date | string
@@ -4779,7 +4793,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
-    price?: FloatFieldUpdateOperationsInput | number
+    price?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     isAvailable?: BoolFieldUpdateOperationsInput | boolean
     imageUrl?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -4792,7 +4806,7 @@ export namespace Prisma {
     categoryId?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
-    price?: FloatFieldUpdateOperationsInput | number
+    price?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     isAvailable?: BoolFieldUpdateOperationsInput | boolean
     imageUrl?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -5041,6 +5055,17 @@ export namespace Prisma {
     createdAt?: SortOrder
   }
 
+  export type DecimalFilter<$PrismaModel = never> = {
+    equals?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    in?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel>
+    notIn?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel>
+    lt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    lte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    gt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    gte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    not?: NestedDecimalFilter<$PrismaModel> | Decimal | DecimalJsLike | number | string
+  }
+
   export type CategoryScalarRelationFilter = {
     is?: CategoryWhereInput
     isNot?: CategoryWhereInput
@@ -5091,6 +5116,22 @@ export namespace Prisma {
 
   export type MenuItemSumOrderByAggregateInput = {
     price?: SortOrder
+  }
+
+  export type DecimalWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    in?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel>
+    notIn?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel>
+    lt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    lte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    gt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    gte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    not?: NestedDecimalWithAggregatesFilter<$PrismaModel> | Decimal | DecimalJsLike | number | string
+    _count?: NestedIntFilter<$PrismaModel>
+    _avg?: NestedDecimalFilter<$PrismaModel>
+    _sum?: NestedDecimalFilter<$PrismaModel>
+    _min?: NestedDecimalFilter<$PrismaModel>
+    _max?: NestedDecimalFilter<$PrismaModel>
   }
 
   export type CategoryCreateNestedManyWithoutRestaurantInput = {
@@ -5269,6 +5310,14 @@ export namespace Prisma {
     connect?: CategoryWhereUniqueInput
   }
 
+  export type DecimalFieldUpdateOperationsInput = {
+    set?: Decimal | DecimalJsLike | number | string
+    increment?: Decimal | DecimalJsLike | number | string
+    decrement?: Decimal | DecimalJsLike | number | string
+    multiply?: Decimal | DecimalJsLike | number | string
+    divide?: Decimal | DecimalJsLike | number | string
+  }
+
   export type RestaurantUpdateOneRequiredWithoutMenuItemsNestedInput = {
     create?: XOR<RestaurantCreateWithoutMenuItemsInput, RestaurantUncheckedCreateWithoutMenuItemsInput>
     connectOrCreate?: RestaurantCreateOrConnectWithoutMenuItemsInput
@@ -5434,6 +5483,33 @@ export namespace Prisma {
     _max?: NestedDateTimeFilter<$PrismaModel>
   }
 
+  export type NestedDecimalFilter<$PrismaModel = never> = {
+    equals?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    in?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel>
+    notIn?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel>
+    lt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    lte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    gt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    gte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    not?: NestedDecimalFilter<$PrismaModel> | Decimal | DecimalJsLike | number | string
+  }
+
+  export type NestedDecimalWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    in?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel>
+    notIn?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel>
+    lt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    lte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    gt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    gte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    not?: NestedDecimalWithAggregatesFilter<$PrismaModel> | Decimal | DecimalJsLike | number | string
+    _count?: NestedIntFilter<$PrismaModel>
+    _avg?: NestedDecimalFilter<$PrismaModel>
+    _sum?: NestedDecimalFilter<$PrismaModel>
+    _min?: NestedDecimalFilter<$PrismaModel>
+    _max?: NestedDecimalFilter<$PrismaModel>
+  }
+
   export type CategoryCreateWithoutRestaurantInput = {
     id?: string
     name: string
@@ -5462,7 +5538,7 @@ export namespace Prisma {
     id?: string
     name: string
     description?: string | null
-    price: number
+    price: Decimal | DecimalJsLike | number | string
     isAvailable?: boolean
     imageUrl?: string | null
     createdAt?: Date | string
@@ -5475,7 +5551,7 @@ export namespace Prisma {
     categoryId: string
     name: string
     description?: string | null
-    price: number
+    price: Decimal | DecimalJsLike | number | string
     isAvailable?: boolean
     imageUrl?: string | null
     createdAt?: Date | string
@@ -5543,7 +5619,7 @@ export namespace Prisma {
     categoryId?: StringFilter<"MenuItem"> | string
     name?: StringFilter<"MenuItem"> | string
     description?: StringNullableFilter<"MenuItem"> | string | null
-    price?: FloatFilter<"MenuItem"> | number
+    price?: DecimalFilter<"MenuItem"> | Decimal | DecimalJsLike | number | string
     isAvailable?: BoolFilter<"MenuItem"> | boolean
     imageUrl?: StringNullableFilter<"MenuItem"> | string | null
     createdAt?: DateTimeFilter<"MenuItem"> | Date | string
@@ -5591,7 +5667,7 @@ export namespace Prisma {
     id?: string
     name: string
     description?: string | null
-    price: number
+    price: Decimal | DecimalJsLike | number | string
     isAvailable?: boolean
     imageUrl?: string | null
     createdAt?: Date | string
@@ -5604,7 +5680,7 @@ export namespace Prisma {
     restaurantId: string
     name: string
     description?: string | null
-    price: number
+    price: Decimal | DecimalJsLike | number | string
     isAvailable?: boolean
     imageUrl?: string | null
     createdAt?: Date | string
@@ -5815,7 +5891,7 @@ export namespace Prisma {
     categoryId: string
     name: string
     description?: string | null
-    price: number
+    price: Decimal | DecimalJsLike | number | string
     isAvailable?: boolean
     imageUrl?: string | null
     createdAt?: Date | string
@@ -5846,7 +5922,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
-    price?: FloatFieldUpdateOperationsInput | number
+    price?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     isAvailable?: BoolFieldUpdateOperationsInput | boolean
     imageUrl?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -5859,7 +5935,7 @@ export namespace Prisma {
     categoryId?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
-    price?: FloatFieldUpdateOperationsInput | number
+    price?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     isAvailable?: BoolFieldUpdateOperationsInput | boolean
     imageUrl?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -5871,7 +5947,7 @@ export namespace Prisma {
     categoryId?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
-    price?: FloatFieldUpdateOperationsInput | number
+    price?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     isAvailable?: BoolFieldUpdateOperationsInput | boolean
     imageUrl?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -5883,7 +5959,7 @@ export namespace Prisma {
     restaurantId: string
     name: string
     description?: string | null
-    price: number
+    price: Decimal | DecimalJsLike | number | string
     isAvailable?: boolean
     imageUrl?: string | null
     createdAt?: Date | string
@@ -5894,7 +5970,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
-    price?: FloatFieldUpdateOperationsInput | number
+    price?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     isAvailable?: BoolFieldUpdateOperationsInput | boolean
     imageUrl?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -5907,7 +5983,7 @@ export namespace Prisma {
     restaurantId?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
-    price?: FloatFieldUpdateOperationsInput | number
+    price?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     isAvailable?: BoolFieldUpdateOperationsInput | boolean
     imageUrl?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -5919,7 +5995,7 @@ export namespace Prisma {
     restaurantId?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
-    price?: FloatFieldUpdateOperationsInput | number
+    price?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     isAvailable?: BoolFieldUpdateOperationsInput | boolean
     imageUrl?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string

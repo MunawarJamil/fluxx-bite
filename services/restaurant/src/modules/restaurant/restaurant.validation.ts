@@ -41,9 +41,7 @@ export const updateRestaurantSchema = z.object({
     longitude: z.number().optional(),
 });
 
-export const deleteRestaurantSchema = z.object({
-    id: z.string().uuid("Invalid restaurant ID"),
-});
+
 
 export const getAllRestaurantsSchema = z.object({
     page: z.coerce.number().min(1).default(1),

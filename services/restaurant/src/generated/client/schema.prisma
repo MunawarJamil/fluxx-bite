@@ -56,7 +56,7 @@ model MenuItem {
   categoryId   String
   name         String
   description  String?
-  price        Float
+  price        Decimal  @db.Decimal(10, 2)
   isAvailable  Boolean  @default(true)
   imageUrl     String?
   createdAt    DateTime @default(now())

@@ -13,13 +13,13 @@ import { authorize } from "../../middleware/authorize.js";
 
 const router = express.Router();
 
-router.get("/nearby", getNearbyRestaurants);
-router.post("/", isAuth, authorize("seller"), createRestaurant);
-router.get("/me", isAuth, authorize("seller"), getMyRestaurant);
-router.get("/", getAllRestaurants);
-router.get("/:id", getRestaurantById);
-router.patch("/:id", isAuth, authorize("seller"), updateRestaurant);
-router.delete("/:id", isAuth, authorize("seller"), deleteRestaurantById);
+router.get("/nearby", getNearbyRestaurants);//tested
+router.post("/", isAuth, authorize("seller"), createRestaurant);//tested
+router.get("/me", isAuth, authorize("seller"), getMyRestaurant);//tested
+router.get("/", getAllRestaurants);//tested
+router.get("/:id", getRestaurantById);//tested
+router.patch("/:id", isAuth, authorize("seller"), updateRestaurant);//tested
+router.delete("/:id", isAuth, authorize("seller"), deleteRestaurantById);//tested
 
 
 export default router;
