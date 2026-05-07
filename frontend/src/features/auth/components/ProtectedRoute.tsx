@@ -24,7 +24,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
 
   // Enforce role selection flow
   const isSelectingRole = location.pathname === '/select-role';
-  
+
   if (!user?.role && !isSelectingRole) {
     return <Navigate to="/select-role" replace />;
   }
@@ -32,7 +32,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
   if (user?.role && isSelectingRole) {
     return <Navigate to="/" replace />;
   }
-  
+
   return <>{children}</>;
 };
 

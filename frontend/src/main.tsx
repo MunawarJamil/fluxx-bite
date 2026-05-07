@@ -6,18 +6,27 @@ import { BrowserRouter } from 'react-router-dom'
 import { AuthProvider } from './features/auth/context/AuthContext'
 import './index.css'
 import App from './App.tsx'
+import { Provider } from 'react-redux'
+import { store } from './store/store.ts'
 
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
-      <BrowserRouter>
-        <AuthProvider>
-          <Toaster position="top-center" reverseOrder={false} />
-          <App />
-        </AuthProvider>
-      </BrowserRouter>
-    </GoogleOAuthProvider>
-  </StrictMode>,
+    <Provider store={store}>
+      <GoogleOAuthProvider
+        clientId={GOOGLE_CLIENT_ID}
+      >
+        <BrowserRouter>
+          <AuthProvider>
+            <Toaster
+              position="top-center"
+              reverseOrder={false}
+            />
+            <App />
+          </AuthProvider>
+        </BrowserRouter>
+      </GoogleOAuthProvider>
+    </Provider>
+  </StrictMode>
 )

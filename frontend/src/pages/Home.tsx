@@ -1,14 +1,14 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../features/auth/hooks/useAuth';
-import { 
-  ShoppingBag, 
-  Bike, 
-  Store, 
-  ChevronRight, 
-  TrendingUp, 
-  Clock, 
-  Star 
+import {
+  ShoppingBag,
+  Bike,
+  Store,
+  ChevronRight,
+  TrendingUp,
+  Clock,
+  Star
 } from 'lucide-react';
 
 const Home: React.FC = () => {
@@ -67,7 +67,7 @@ const Home: React.FC = () => {
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
         {roleData.stats.map((stat, index) => (
-          <div 
+          <div
             key={stat.label}
             className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex items-center space-x-4 animate-in fade-in slide-in-from-bottom-6 duration-700"
             style={{ animationDelay: `${index * 100}ms` }}
@@ -100,7 +100,7 @@ const Home: React.FC = () => {
           <div className="relative z-10">
             <h3 className="text-2xl font-bold text-slate-900 mb-2">My Profile</h3>
             <p className="text-slate-500 mb-6 font-medium">Manage your account settings and preferences.</p>
-            <button 
+            <button
               onClick={() => navigate('/profile')}
               className="bg-slate-900 text-white px-6 py-3 rounded-xl font-bold flex items-center hover:bg-slate-800 transition-all"
             >
