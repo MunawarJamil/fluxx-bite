@@ -19,10 +19,18 @@ const app = express();
 app.use(apiLimiter);
 // Security Middlewares
 app.use(helmet());
+// app.use(cors({
+//     origin: config.corsOrigin,
+//     credentials: true,
+// }));
+
+
+
 app.use(cors({
-    origin: config.corsOrigin,
+    origin: "http://localhost:5173",
     credentials: true,
 }));
+
 
 // Performance Middlewares
 app.use(compression());

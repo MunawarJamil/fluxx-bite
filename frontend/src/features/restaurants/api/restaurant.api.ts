@@ -69,6 +69,7 @@ export const restaurantApi =
                 invalidatesTags: ["Restaurant"],
             }),
 
+            // get restaurant by seller id
             getMyRestaurant: builder.query<
                 RestaurantResponse,
                 void
@@ -97,6 +98,40 @@ export const restaurantApi =
                 providesTags: ["Restaurant"],
             }),
 
+
+
+            // get all restaurants 
+            getAllRestaurants: builder.query<
+                RestaurantsListResponse,
+                GetAllRestaurantsParams
+            >({
+                queryFn: async (params = {}) => {
+                    try {
+                        const data =
+                            await restaurantService.getAllRestaurants(
+                                params
+                            );
+
+                        return { data };
+
+                    } catch (error: any) {
+                        return {
+                            error: {
+                                status:
+                                    error.response?.status || 500,
+
+                                data:
+                                    error.response?.data ||
+                                    "Something went wrong",
+                            },
+                        };
+                    }
+                },
+
+                providesTags: ["Restaurant"],
+            }),
+
+            // get restaurant by id
             getRestaurantById: builder.query<
                 RestaurantResponse,
                 string
@@ -230,35 +265,6 @@ export const restaurantApi =
 
 
 
-            getAllRestaurants: builder.query<
-                RestaurantsListResponse,
-                GetAllRestaurantsParams
-            >({
-                queryFn: async (params = {}) => {
-                    try {
-                        const data =
-                            await restaurantService.getAllRestaurants(
-                                params
-                            );
-
-                        return { data };
-
-                    } catch (error: any) {
-                        return {
-                            error: {
-                                status:
-                                    error.response?.status || 500,
-
-                                data:
-                                    error.response?.data ||
-                                    "Something went wrong",
-                            },
-                        };
-                    }
-                },
-
-                providesTags: ["Restaurant"],
-            }),
         }),
     });
 

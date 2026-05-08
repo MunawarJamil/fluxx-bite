@@ -42,9 +42,11 @@ export const createRestaurantSchema =
             .min(5)
             .max(255),
 
-        latitude: z.coerce.number(),
+        // latitude: z.coerce.number(),
+        latitude: z.number(),
 
-        longitude: z.coerce.number(),
+        // longitude: z.coerce.number(),
+        longitude: z.number(),
     });
 
 export type CreateRestaurantPayloadSchemaType =

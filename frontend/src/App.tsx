@@ -15,6 +15,11 @@ import RestaurantsPage from "./features/restaurants/pages/RestaurantsPage";
 import MainLayout from "./components/layout/MainLayout";
 
 import Profile from "./pages/Profile";
+import CreateRestaurantPage from "./features/restaurants/pages/CreateRestaurantPage";
+import UpdateRestaurantPage from "./features/restaurants/pages/UpdateRestaurantPage";
+import RestaurantDetailsPage from "./features/restaurants/pages/RestaurantDetailsPage";
+import NearbyRestaurantsPage from "./features/restaurants/pages/NearbyRestaurantsPage";
+import SellerRestaurantPage from "./features/restaurants/pages/SellerRestaurantPage";
 
 function App() {
   return (
@@ -37,6 +42,35 @@ function App() {
         <Route
           path="/restaurants"
           element={<RestaurantsPage />}
+        />
+
+        {/* Create Restaurant */}
+        <Route
+          path="/restaurants/create"
+          element={<CreateRestaurantPage />}
+        />
+
+        {/* Update Restaurant */}
+        <Route
+          path="/restaurants/:id/edit"
+          element={<UpdateRestaurantPage />}
+        />
+
+        <Route
+          path="/restaurants/:id"
+          element={<RestaurantDetailsPage />}
+        />
+
+
+
+        <Route
+          path="/seller/restaurant"
+          element={<SellerRestaurantPage />}
+        />
+        {/* Nearby Restaurants */}
+        <Route
+          path="/nearby-restaurants"
+          element={<NearbyRestaurantsPage />}
         />
 
         {/* Protected Routes within MainLayout */}

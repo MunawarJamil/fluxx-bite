@@ -1,21 +1,20 @@
-import { useNearbyRestaurants, useRestaurants } from "../hooks/useRestaurants";
+import { useNearbyRestaurants } from "../hooks/useRestaurants";
 import RestaurantCard from "./RestaurantCard";
 
-const RestaurantsPage = () => {
-
+const NearbyRestaurantsPage = () => {
     const {
-        restaurants,
         pagination,
-
+        restaurants,
         isLoading,
         isError,
         error,
-    } = useRestaurants({
+    } = useNearbyRestaurants({
+        lat: 31.5204,
+        lng: 74.3587,
+
         page: 1,
         limit: 10,
     });
-
-
 
 
     if (isLoading) {
@@ -52,7 +51,7 @@ const RestaurantsPage = () => {
     return (
         <div className="p-6">
             <h1 className="text-2xl font-bold mb-6">
-                Explore Restaurants
+                Nearby Restaurants
             </h1>
 
             <div className="space-y-4">
@@ -78,4 +77,4 @@ const RestaurantsPage = () => {
     );
 };
 
-export default RestaurantsPage;
+export default NearbyRestaurantsPage;

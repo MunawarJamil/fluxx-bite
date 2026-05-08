@@ -169,14 +169,14 @@ export const socialLogin = asyncHandler(
     // 7. Set cookies
 
     res.cookie('accessToken', accessToken, {
-      httpOnly: false,
+      httpOnly: true,
       secure: isProd,
       sameSite: 'lax',
       maxAge: 15 * 60 * 1000, // 15 min
     });
 
     res.cookie('refreshToken', refreshToken, {
-      httpOnly: false,
+      httpOnly: true,
       secure: isProd,
       sameSite: 'lax',
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
@@ -242,14 +242,14 @@ export const register = asyncHandler(
 
     // 5. Set cookies
     res.cookie('accessToken', accessToken, {
-      httpOnly: false,
+      httpOnly: true,
       secure: isProd,
       sameSite: 'lax',
       maxAge: 15 * 60 * 1000,
     });
 
     res.cookie('refreshToken', refreshToken, {
-      httpOnly: false,
+      httpOnly: true,
       secure: isProd,
       sameSite: 'lax',
       maxAge: 7 * 24 * 60 * 60 * 1000,
@@ -308,14 +308,14 @@ export const login = asyncHandler(
 
     // 5. Set cookies
     res.cookie('accessToken', accessToken, {
-      httpOnly: false,
+      httpOnly: true,
       secure: isProd,
       sameSite: 'lax',
       maxAge: 15 * 60 * 1000,
     });
 
     res.cookie('refreshToken', refreshToken, {
-      httpOnly: false,
+      httpOnly: true,
       secure: isProd,
       sameSite: 'lax',
       maxAge: 7 * 24 * 60 * 60 * 1000,
@@ -407,14 +407,14 @@ export const refreshToken = asyncHandler(async (req, res, next) => {
 
     //  Send new cookies
     res.cookie('accessToken', accessToken, {
-      httpOnly: false,
+      httpOnly: true,
       secure: isProd,
       maxAge: 15 * 60 * 1000,
       sameSite: 'lax',
     });
 
     res.cookie('refreshToken', newRefreshToken, {
-      httpOnly: false,
+      httpOnly: true,
       secure: isProd,
       maxAge: 7 * 24 * 60 * 60 * 1000,
       sameSite: 'lax',
@@ -449,13 +449,13 @@ export const logout = asyncHandler(async (req, res) => {
   }
 
   res.clearCookie('accessToken', {
-    httpOnly: false,
+    httpOnly: true,
     secure: isProd,
     sameSite: 'lax',
   });
 
   res.clearCookie('refreshToken', {
-    httpOnly: false,
+    httpOnly: true,
     sameSite: 'lax',
   });
 

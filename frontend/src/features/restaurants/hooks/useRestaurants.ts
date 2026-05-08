@@ -12,7 +12,7 @@ interface UseNearbyRestaurantsParams {
     page?: number;
     limit?: number;
 }
-
+// get restaurant by nearby location
 export const useNearbyRestaurants = ({
     lat,
     lng,
@@ -56,7 +56,7 @@ export const useNearbyRestaurants = ({
 };
 
 
-
+// create restaurant
 export const useCreateRestaurant = () => {
     const [
         createRestaurant,
@@ -86,7 +86,7 @@ export const useCreateRestaurant = () => {
     };
 };
 
-
+// get restaurant by seller id
 export const useMyRestaurant = () => {
     const query = useGetMyRestaurantQuery();
 
@@ -105,7 +105,7 @@ export const useMyRestaurant = () => {
         refetch: query.refetch,
     };
 };
-
+// get restaurant by restaurant id
 export const useRestaurant = (
     id: string
 ) => {
@@ -130,7 +130,7 @@ export const useRestaurant = (
     };
 };
 
-
+// update restaurant
 export const useUpdateRestaurant = () => {
     const [
         updateRestaurant,
@@ -162,6 +162,7 @@ export const useUpdateRestaurant = () => {
     };
 };
 
+// delete restaurant
 export const useDeleteRestaurant = () => {
     const [
         deleteRestaurant,
@@ -189,7 +190,7 @@ export const useDeleteRestaurant = () => {
     };
 };
 
-
+// get all restaurants
 export const useRestaurants = ({
     page = 1,
     limit = 10,

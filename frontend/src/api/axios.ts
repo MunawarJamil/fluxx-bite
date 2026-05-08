@@ -7,7 +7,7 @@ const api = axios.create({
     import.meta.env.VITE_API_BASE_URL ||
     'http://localhost:5000/api/v1',
 
-  withCredentials: false, // send HttpOnly cookies
+  withCredentials: true, // send HttpOnly cookies
   timeout: 10000, // prevent hanging requests
 
   headers: {
