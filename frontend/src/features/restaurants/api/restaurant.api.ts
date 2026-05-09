@@ -69,7 +69,7 @@ export const restaurantApi =
                 invalidatesTags: ["Restaurant"],
             }),
 
-            // get restaurant by seller id
+            // get restaurant by owner id
             getMyRestaurant: builder.query<
                 RestaurantResponse,
                 void

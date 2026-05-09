@@ -12,7 +12,7 @@ const router = express.Router();
  * @access  Private (Restaurant Owner)
  */
 router.post(
-    "/restaurants/:restaurantId",
+    "/restaurants/:restaurantId/categories",
     isAuth,
     createCategory
 );
@@ -23,7 +23,7 @@ router.post(
  * @access  Public
  */
 router.get(
-    "/restaurants/:restaurantId",
+    "/restaurants/:restaurantId/categories",
     getRestaurantCategories
 );
 

@@ -1,25 +1,27 @@
 import { Routes, Route, Outlet } from "react-router-dom";
 
 import Home from "./pages/Home";
-
-import Login from "./features/auth/components/Login";
-
-import RoleSelection from "./features/auth/components/RoleSelection";
-
-import ProtectedRoute from "./features/auth/components/ProtectedRoute";
-
-import PublicRoute from "./features/auth/components/PublicRoute";
-
-import RestaurantsPage from "./features/restaurants/pages/RestaurantsPage";
+import Profile from "./pages/Profile";
 
 import MainLayout from "./components/layout/MainLayout";
 
-import Profile from "./pages/Profile";
+import Login from "./features/auth/components/Login";
+import RoleSelection from "./features/auth/components/RoleSelection";
+
+import ProtectedRoute from "./features/auth/components/ProtectedRoute";
+import PublicRoute from "./features/auth/components/PublicRoute";
+import SellerRoute from "./features/auth/components/SellerRoute";
+
+import RestaurantsPage from "./features/restaurants/pages/RestaurantsPage";
 import CreateRestaurantPage from "./features/restaurants/pages/CreateRestaurantPage";
 import UpdateRestaurantPage from "./features/restaurants/pages/UpdateRestaurantPage";
 import RestaurantDetailsPage from "./features/restaurants/pages/RestaurantDetailsPage";
 import NearbyRestaurantsPage from "./features/restaurants/pages/NearbyRestaurantsPage";
 import SellerRestaurantPage from "./features/restaurants/pages/SellerRestaurantPage";
+import CreateCategoryPage from "./features/categories/pages/CreateCategoryPage";
+import UpdateCategoryPage from "./features/categories/pages/UpdateCategoryPage";
+import CreateMenuItemPage from "./features/menu-items/pages/CreateMenuItemPage";
+import UpdateMenuItemPage from "./features/menu-items/pages/UpdateMenuItemPage";
 
 function App() {
   return (
@@ -34,26 +36,21 @@ function App() {
         }
       />
 
-      {/* Public Layout Routes */}
+      {/* Main Layout */}
       <Route element={<MainLayout />}>
-        <Route path="/" element={<Home />} />
+        {/* Public Pages */}
+        <Route
+          path="/"
+          element={<Home />}
+        />
 
-        {/* Restaurants */}
         <Route
           path="/restaurants"
-          element={<RestaurantsPage />}
-        />
-
-        {/* Create Restaurant */}
-        <Route
-          path="/restaurants/create"
-          element={<CreateRestaurantPage />}
-        />
-
-        {/* Update Restaurant */}
-        <Route
-          path="/restaurants/:id/edit"
-          element={<UpdateRestaurantPage />}
+          element={
+            <ProtectedRoute>
+              <RestaurantsPage />
+            </ProtectedRoute>
+          }
         />
 
         <Route
@@ -61,19 +58,12 @@ function App() {
           element={<RestaurantDetailsPage />}
         />
 
-
-
-        <Route
-          path="/seller/restaurant"
-          element={<SellerRestaurantPage />}
-        />
-        {/* Nearby Restaurants */}
         <Route
           path="/nearby-restaurants"
           element={<NearbyRestaurantsPage />}
         />
 
-        {/* Protected Routes within MainLayout */}
+        {/* Protected Routes */}
         <Route
           element={
             <ProtectedRoute>
@@ -86,9 +76,80 @@ function App() {
             element={<Profile />}
           />
         </Route>
+
+        {/* Seller Routes */}
+        <Route
+          element={
+            <ProtectedRoute>
+              <SellerRoute>
+                <Outlet />
+              </SellerRoute>
+            </ProtectedRoute>
+          }
+        >
+          <Route
+            path="/restaurants/create"
+            element={<CreateRestaurantPage />}
+          />
+
+          <Route
+            path="/restaurants/:id/edit"
+            element={<UpdateRestaurantPage />}
+          />
+
+          <Route
+            path="/owner/restaurant"
+            element={<SellerRestaurantPage />}
+          />
+        </Route>
+
+        {/* Categories Routes */}
+        <Route
+          element={
+            <ProtectedRoute>
+              <SellerRoute>
+                <Outlet />
+              </SellerRoute>
+            </ProtectedRoute>
+          }
+        >
+          <Route
+            path="/categories/create"
+            element={<CreateCategoryPage />}
+          />
+
+          <Route
+            path="/categories/:id/edit"
+            element={
+              <UpdateCategoryPage />
+            }
+          />
+
+
+        </Route>
+
+
+        <Route
+          path="/menu-items/create"
+          element={
+            <CreateMenuItemPage />
+          }
+        />
+
+        <Route
+          path="/menu-items/:id/edit"
+          element={
+            <UpdateMenuItemPage />
+          }
+        />
+
+
+
+
+
       </Route>
 
-      {/* Specialized Protected Routes */}
+      {/* Role Selection */}
       <Route
         path="/select-role"
         element={
@@ -97,7 +158,7 @@ function App() {
           </ProtectedRoute>
         }
       />
-    </Routes>
+    </Routes >
   );
 }
 

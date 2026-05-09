@@ -33,6 +33,19 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
     return <Navigate to="/" replace />;
   }
 
+
+  // Prevent sellers from accessing customer restaurants page
+  if (
+    user?.role === "seller" &&
+    location.pathname === "/restaurants"
+  ) {
+    return <Navigate to="/owner/restaurant" replace />;
+  }
+
+
+
+
+
   return <>{children}</>;
 };
 

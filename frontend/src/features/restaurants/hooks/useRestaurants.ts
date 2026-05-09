@@ -86,8 +86,8 @@ export const useCreateRestaurant = () => {
     };
 };
 
-// get restaurant by seller id
-export const useMyRestaurant = () => {
+// get restaurant by owner id
+export const useOwnerRestaurant = () => {
     const query = useGetMyRestaurantQuery();
 
     return {

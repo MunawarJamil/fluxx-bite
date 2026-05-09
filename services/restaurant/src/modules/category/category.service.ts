@@ -1,5 +1,5 @@
 import prisma from "../../config/prisma.js";
-// import { Prisma } from "../../generated/client/index.js";
+import { Prisma } from "@prisma/client";
 import ErrorResponse from "../../utils/ErrorResponse.js";
 import logger from "../../utils/logger.js";
 
@@ -218,23 +218,23 @@ export const updateCategory = async (
 
     } catch (error: any) {
 
-        // // 4. Handle duplicate category name
-        // if (
-        //     error instanceof Prisma.PrismaClientKnownRequestError &&
-        //     error.code === "P2002"
-        // ) {
+        // 4. Handle duplicate category name
+        if (
+            error instanceof Prisma.PrismaClientKnownRequestError &&
+            error.code === "P2002"
+        ) {
 
-        //     logger.warn("Duplicate category update blocked", {
-        //         ownerId,
-        //         categoryId,
-        //         categoryName: data.name,
-        //     });
+            logger.warn("Duplicate category update blocked", {
+                ownerId,
+                categoryId,
+                categoryName: data.name,
+            });
 
-        //     throw new ErrorResponse(
-        //         "Category with this name already exists",
-        //         409
-        //     );
-        // }
+            throw new ErrorResponse(
+                "Category with this name already exists",
+                409
+            );
+        }
 
         logger.error("Update category database error", {
             ownerId,

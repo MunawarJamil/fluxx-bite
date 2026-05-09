@@ -17,7 +17,7 @@ router.get("/nearby", getNearbyRestaurants);
 router.post("/", isAuth, authorize("seller"), createRestaurant);
 router.get("/", getAllRestaurants);
 
-router.get("/me", isAuth, authorize("seller"), getMyRestaurant);
+router.get("/owner", isAuth, authorize("seller"), getMyRestaurant);
 router.get("/:id", getRestaurantById);
 router.patch("/:id", isAuth, authorize("seller"), updateRestaurant);
 router.delete("/:id", isAuth, authorize("seller"), deleteRestaurantById);

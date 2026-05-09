@@ -11,9 +11,7 @@ export const baseApi = createApi({
         credentials: "include",
     }),
 
-    tagTypes: ["Restaurant"],
+    tagTypes: ["Restaurant", "Category", "MenuItem"],
 
-    endpoints: () => ({
-
-    }),
+    endpoints: () => ({}),
 });

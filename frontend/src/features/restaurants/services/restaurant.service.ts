@@ -53,7 +53,7 @@ export const restaurantService = {
         async (): Promise<RestaurantResponse> => {
             const response =
                 await api.get<RestaurantResponse>(
-                    `${BASE_URL}/me`
+                    `${BASE_URL}/owner`
                 );
 
             return response.data;

@@ -281,6 +281,7 @@ export const getAllRestaurants = async (
             message: "Restaurants fetched successfully",
             data: result.restaurants,
             pagination: result.pagination,
+
         });
 
     } catch (error: any) {
